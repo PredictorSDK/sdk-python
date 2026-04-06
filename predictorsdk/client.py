@@ -6,12 +6,12 @@ import httpx
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
-from .environment import PredictorSdkApiEnvironment
-from .raw_client import AsyncRawPredictorSdkApi, RawPredictorSdkApi
+from .environment import PredictorSDKEnvironment
+from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
 from .types.sports_matching_response import SportsMatchingResponse
 
 
-class PredictorSdkApi:
+class PredictorSDK:
     """
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
 
@@ -20,12 +20,12 @@ class PredictorSdkApi:
     base_url : typing.Optional[str]
         The base url to use for requests from the client.
 
-    environment : PredictorSdkApiEnvironment
-        The environment to use for requests from the client. from .environment import PredictorSdkApiEnvironment
+    environment : PredictorSDKEnvironment
+        The environment to use for requests from the client. from .environment import PredictorSDKEnvironment
 
 
 
-        Defaults to PredictorSdkApiEnvironment.PRODUCTION
+        Defaults to PredictorSDKEnvironment.PRODUCTION
 
 
 
@@ -47,9 +47,9 @@ class PredictorSdkApi:
 
     Examples
     --------
-    from predictorsdk import PredictorSdkApi
+    from predictorsdk import PredictorSDK
 
-    client = PredictorSdkApi(
+    client = PredictorSDK(
         token="YOUR_TOKEN",
     )
     """
@@ -58,7 +58,7 @@ class PredictorSdkApi:
         self,
         *,
         base_url: typing.Optional[str] = None,
-        environment: PredictorSdkApiEnvironment = PredictorSdkApiEnvironment.PRODUCTION,
+        environment: PredictorSDKEnvironment = PredictorSDKEnvironment.PRODUCTION,
         token: typing.Union[str, typing.Callable[[], str]],
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
@@ -81,16 +81,16 @@ class PredictorSdkApi:
             timeout=_defaulted_timeout,
             logging=logging,
         )
-        self._raw_client = RawPredictorSdkApi(client_wrapper=self._client_wrapper)
+        self._raw_client = RawPredictorSDK(client_wrapper=self._client_wrapper)
 
     @property
-    def with_raw_response(self) -> RawPredictorSdkApi:
+    def with_raw_response(self) -> RawPredictorSDK:
         """
         Retrieves a raw implementation of this client that returns raw responses.
 
         Returns
         -------
-        RawPredictorSdkApi
+        RawPredictorSDK
         """
         return self._raw_client
 
@@ -130,9 +130,9 @@ class PredictorSdkApi:
 
         Examples
         --------
-        from predictorsdk import PredictorSdkApi
+        from predictorsdk import PredictorSDK
 
-        client = PredictorSdkApi(
+        client = PredictorSDK(
             token="YOUR_TOKEN",
         )
         client.get_sports_matching_markets()
@@ -147,7 +147,7 @@ class PredictorSdkApi:
         return _response.data
 
 
-class AsyncPredictorSdkApi:
+class AsyncPredictorSDK:
     """
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
 
@@ -156,12 +156,12 @@ class AsyncPredictorSdkApi:
     base_url : typing.Optional[str]
         The base url to use for requests from the client.
 
-    environment : PredictorSdkApiEnvironment
-        The environment to use for requests from the client. from .environment import PredictorSdkApiEnvironment
+    environment : PredictorSDKEnvironment
+        The environment to use for requests from the client. from .environment import PredictorSDKEnvironment
 
 
 
-        Defaults to PredictorSdkApiEnvironment.PRODUCTION
+        Defaults to PredictorSDKEnvironment.PRODUCTION
 
 
 
@@ -186,9 +186,9 @@ class AsyncPredictorSdkApi:
 
     Examples
     --------
-    from predictorsdk import AsyncPredictorSdkApi
+    from predictorsdk import AsyncPredictorSDK
 
-    client = AsyncPredictorSdkApi(
+    client = AsyncPredictorSDK(
         token="YOUR_TOKEN",
     )
     """
@@ -197,7 +197,7 @@ class AsyncPredictorSdkApi:
         self,
         *,
         base_url: typing.Optional[str] = None,
-        environment: PredictorSdkApiEnvironment = PredictorSdkApiEnvironment.PRODUCTION,
+        environment: PredictorSDKEnvironment = PredictorSDKEnvironment.PRODUCTION,
         token: typing.Union[str, typing.Callable[[], str]],
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
@@ -222,16 +222,16 @@ class AsyncPredictorSdkApi:
             timeout=_defaulted_timeout,
             logging=logging,
         )
-        self._raw_client = AsyncRawPredictorSdkApi(client_wrapper=self._client_wrapper)
+        self._raw_client = AsyncRawPredictorSDK(client_wrapper=self._client_wrapper)
 
     @property
-    def with_raw_response(self) -> AsyncRawPredictorSdkApi:
+    def with_raw_response(self) -> AsyncRawPredictorSDK:
         """
         Retrieves a raw implementation of this client that returns raw responses.
 
         Returns
         -------
-        AsyncRawPredictorSdkApi
+        AsyncRawPredictorSDK
         """
         return self._raw_client
 
@@ -273,9 +273,9 @@ class AsyncPredictorSdkApi:
         --------
         import asyncio
 
-        from predictorsdk import AsyncPredictorSdkApi
+        from predictorsdk import AsyncPredictorSDK
 
-        client = AsyncPredictorSdkApi(
+        client = AsyncPredictorSDK(
             token="YOUR_TOKEN",
         )
 
@@ -296,7 +296,7 @@ class AsyncPredictorSdkApi:
         return _response.data
 
 
-def _get_base_url(*, base_url: typing.Optional[str] = None, environment: PredictorSdkApiEnvironment) -> str:
+def _get_base_url(*, base_url: typing.Optional[str] = None, environment: PredictorSDKEnvironment) -> str:
     if base_url is not None:
         return base_url
     elif environment is not None:

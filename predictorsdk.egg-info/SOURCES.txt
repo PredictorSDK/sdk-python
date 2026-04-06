@@ -3,6 +3,7 @@ pyproject.toml
 predictorsdk/__init__.py
 predictorsdk/client.py
 predictorsdk/environment.py
+predictorsdk/py.typed
 predictorsdk/raw_client.py
 predictorsdk.egg-info/PKG-INFO
 predictorsdk.egg-info/SOURCES.txt

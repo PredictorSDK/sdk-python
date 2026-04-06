@@ -14,17 +14,17 @@ if typing.TYPE_CHECKING:
         TooManyRequestsError,
         UnauthorizedError,
     )
-    from .client import AsyncPredictorSdkApi, PredictorSdkApi
-    from .environment import PredictorSdkApiEnvironment
+    from .client import AsyncPredictorSDK, PredictorSDK
+    from .environment import PredictorSDKEnvironment
 _dynamic_imports: typing.Dict[str, str] = {
-    "AsyncPredictorSdkApi": ".client",
+    "AsyncPredictorSDK": ".client",
     "BadRequestError": ".errors",
     "ErrorResponse": ".types",
     "ForbiddenError": ".errors",
     "PlatformMarket": ".types",
     "PlatformMarketPlatform": ".types",
-    "PredictorSdkApi": ".client",
-    "PredictorSdkApiEnvironment": ".environment",
+    "PredictorSDK": ".client",
+    "PredictorSDKEnvironment": ".environment",
     "ServiceUnavailableError": ".errors",
     "SportsMatchingResponse": ".types",
     "TooManyRequestsError": ".errors",
@@ -54,14 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "AsyncPredictorSdkApi",
+    "AsyncPredictorSDK",
     "BadRequestError",
     "ErrorResponse",
     "ForbiddenError",
     "PlatformMarket",
     "PlatformMarketPlatform",
-    "PredictorSdkApi",
-    "PredictorSdkApiEnvironment",
+    "PredictorSDK",
+    "PredictorSDKEnvironment",
     "ServiceUnavailableError",
     "SportsMatchingResponse",
     "TooManyRequestsError",

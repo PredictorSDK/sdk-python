@@ -3,5 +3,5 @@
 import enum
 
 
-class PredictorSdkApiEnvironment(enum.Enum):
+class PredictorSDKEnvironment(enum.Enum):
     PRODUCTION = "https://api.predictorsdk.com"

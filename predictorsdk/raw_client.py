@@ -19,7 +19,7 @@ from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
 
 
-class RawPredictorSdkApi:
+class RawPredictorSDK:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
@@ -143,7 +143,7 @@ class RawPredictorSdkApi:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
-class AsyncRawPredictorSdkApi:
+class AsyncRawPredictorSDK:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
