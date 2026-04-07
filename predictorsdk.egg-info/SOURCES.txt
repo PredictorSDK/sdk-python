@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 predictorsdk/__init__.py
+predictorsdk/_default_clients.py
 predictorsdk/client.py
 predictorsdk/environment.py
 predictorsdk/py.typed
@@ -37,6 +38,8 @@ predictorsdk/errors/forbidden_error.py
 predictorsdk/errors/service_unavailable_error.py
 predictorsdk/errors/too_many_requests_error.py
 predictorsdk/errors/unauthorized_error.py
+predictorsdk/tests/conftest.py
+predictorsdk/tests/test_aiohttp_autodetect.py
 predictorsdk/types/__init__.py
 predictorsdk/types/error_response.py
 predictorsdk/types/platform_market.py

@@ -14,11 +14,14 @@ if typing.TYPE_CHECKING:
         TooManyRequestsError,
         UnauthorizedError,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncPredictorSDK, PredictorSDK
     from .environment import PredictorSDKEnvironment
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncPredictorSDK": ".client",
     "BadRequestError": ".errors",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "ErrorResponse": ".types",
     "ForbiddenError": ".errors",
     "PlatformMarket": ".types",
@@ -56,6 +59,8 @@ def __dir__():
 __all__ = [
     "AsyncPredictorSDK",
     "BadRequestError",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "ErrorResponse",
     "ForbiddenError",
     "PlatformMarket",
