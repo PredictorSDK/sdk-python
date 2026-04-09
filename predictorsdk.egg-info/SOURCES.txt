@@ -33,6 +33,7 @@ predictorsdk/core/http_sse/_decoders.py
 predictorsdk/core/http_sse/_exceptions.py
 predictorsdk/core/http_sse/_models.py
 predictorsdk/errors/__init__.py
+predictorsdk/errors/bad_gateway_error.py
 predictorsdk/errors/bad_request_error.py
 predictorsdk/errors/forbidden_error.py
 predictorsdk/errors/service_unavailable_error.py
@@ -41,6 +42,8 @@ predictorsdk/errors/unauthorized_error.py
 predictorsdk/tests/conftest.py
 predictorsdk/tests/test_aiohttp_autodetect.py
 predictorsdk/types/__init__.py
+predictorsdk/types/crypto_price_item.py
+predictorsdk/types/crypto_prices_response.py
 predictorsdk/types/error_response.py
 predictorsdk/types/platform_market.py
 predictorsdk/types/platform_market_platform.py

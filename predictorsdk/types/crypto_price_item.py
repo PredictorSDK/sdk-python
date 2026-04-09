@@ -6,14 +6,21 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
-class ErrorResponse(UniversalBaseModel):
-    error: str
-    message: typing.Optional[str] = pydantic.Field(default=None)
+class CryptoPriceItem(UniversalBaseModel):
+    symbol: str = pydantic.Field()
     """
-    Additional detail about the error. May be present, including on some validation errors.
+    Trading pair in lowercase (e.g. `btcusdt`).
     """
 
-    status_code: int
+    value: float = pydantic.Field()
+    """
+    Close price for the 1-second interval.
+    """
+
+    timestamp: int = pydantic.Field()
+    """
+    Unix timestamp in milliseconds for the start of the 1-second interval.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

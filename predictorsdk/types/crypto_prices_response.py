@@ -4,16 +4,20 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .crypto_price_item import CryptoPriceItem
 
 
-class ErrorResponse(UniversalBaseModel):
-    error: str
-    message: typing.Optional[str] = pydantic.Field(default=None)
+class CryptoPricesResponse(UniversalBaseModel):
+    prices: typing.List[CryptoPriceItem]
+    pagination_key: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Additional detail about the error. May be present, including on some validation errors.
+    Base64-encoded cursor for fetching the next page. Absent when there are no more results.
     """
 
-    status_code: int
+    total: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Number of prices in this response page. Omitted on empty responses for unknown symbols.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

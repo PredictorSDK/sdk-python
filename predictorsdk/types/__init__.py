@@ -6,11 +6,15 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .crypto_price_item import CryptoPriceItem
+    from .crypto_prices_response import CryptoPricesResponse
     from .error_response import ErrorResponse
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
     from .sports_matching_response import SportsMatchingResponse
 _dynamic_imports: typing.Dict[str, str] = {
+    "CryptoPriceItem": ".crypto_price_item",
+    "CryptoPricesResponse": ".crypto_prices_response",
     "ErrorResponse": ".error_response",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
@@ -39,4 +43,11 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ErrorResponse", "PlatformMarket", "PlatformMarketPlatform", "SportsMatchingResponse"]
+__all__ = [
+    "CryptoPriceItem",
+    "CryptoPricesResponse",
+    "ErrorResponse",
+    "PlatformMarket",
+    "PlatformMarketPlatform",
+    "SportsMatchingResponse",
+]

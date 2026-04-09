@@ -8,6 +8,7 @@ from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .environment import PredictorSDKEnvironment
 from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
+from .types.crypto_prices_response import CryptoPricesResponse
 from .types.sports_matching_response import SportsMatchingResponse
 
 
@@ -142,6 +143,65 @@ class PredictorSDK:
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def get_binance_crypto_prices(
+        self,
+        *,
+        currency: str,
+        start_time: typing.Optional[int] = None,
+        end_time: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        pagination_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CryptoPricesResponse:
+        """
+        Returns per-second price data for a Binance trading pair. When called without a time range, returns the latest price. With `start_time` and `end_time`, returns historical per-second prices in newest-first order. Supports cursor-based pagination for large result sets. Unknown or invalid symbols return `200` with `{"prices":[]}` and omit `total`.
+
+        Parameters
+        ----------
+        currency : str
+            Binance trading pair (e.g. `btcusdt`, `ethusdt`, `solusdt`). Must contain only alphanumeric characters (no hyphens, underscores, or other separators). Uppercase is accepted and automatically lowercased (e.g. `BTCUSDT` → `btcusdt`). Must be a valid Binance symbol; unknown symbols return `200` with an empty `prices` array.
+
+        start_time : typing.Optional[int]
+            Start of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        end_time : typing.Optional[int]
+            End of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        limit : typing.Optional[int]
+            Maximum number of prices to return. Defaults to 100 when a time range is present. Values above 100 are silently clamped to 100. Without a time range, this parameter is ignored — the endpoint always returns the single latest price.
+
+        pagination_key : typing.Optional[str]
+            Base64-encoded cursor from a previous response to fetch the next page of results.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CryptoPricesResponse
+            Crypto price data
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_binance_crypto_prices(
+            currency="btcusdt",
+        )
+        """
+        _response = self._raw_client.get_binance_crypto_prices(
+            currency=currency,
+            start_time=start_time,
+            end_time=end_time,
+            limit=limit,
+            pagination_key=pagination_key,
             request_options=request_options,
         )
         return _response.data
@@ -307,6 +367,73 @@ class AsyncPredictorSDK:
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def get_binance_crypto_prices(
+        self,
+        *,
+        currency: str,
+        start_time: typing.Optional[int] = None,
+        end_time: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        pagination_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CryptoPricesResponse:
+        """
+        Returns per-second price data for a Binance trading pair. When called without a time range, returns the latest price. With `start_time` and `end_time`, returns historical per-second prices in newest-first order. Supports cursor-based pagination for large result sets. Unknown or invalid symbols return `200` with `{"prices":[]}` and omit `total`.
+
+        Parameters
+        ----------
+        currency : str
+            Binance trading pair (e.g. `btcusdt`, `ethusdt`, `solusdt`). Must contain only alphanumeric characters (no hyphens, underscores, or other separators). Uppercase is accepted and automatically lowercased (e.g. `BTCUSDT` → `btcusdt`). Must be a valid Binance symbol; unknown symbols return `200` with an empty `prices` array.
+
+        start_time : typing.Optional[int]
+            Start of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        end_time : typing.Optional[int]
+            End of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        limit : typing.Optional[int]
+            Maximum number of prices to return. Defaults to 100 when a time range is present. Values above 100 are silently clamped to 100. Without a time range, this parameter is ignored — the endpoint always returns the single latest price.
+
+        pagination_key : typing.Optional[str]
+            Base64-encoded cursor from a previous response to fetch the next page of results.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CryptoPricesResponse
+            Crypto price data
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_binance_crypto_prices(
+                currency="btcusdt",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_binance_crypto_prices(
+            currency=currency,
+            start_time=start_time,
+            end_time=end_time,
+            limit=limit,
+            pagination_key=pagination_key,
             request_options=request_options,
         )
         return _response.data

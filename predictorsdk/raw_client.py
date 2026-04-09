@@ -9,11 +9,13 @@ from .core.http_response import AsyncHttpResponse, HttpResponse
 from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
+from .errors.bad_gateway_error import BadGatewayError
 from .errors.bad_request_error import BadRequestError
 from .errors.forbidden_error import ForbiddenError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
 from .errors.unauthorized_error import UnauthorizedError
+from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
 from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
@@ -142,6 +144,141 @@ class RawPredictorSDK:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def get_binance_crypto_prices(
+        self,
+        *,
+        currency: str,
+        start_time: typing.Optional[int] = None,
+        end_time: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        pagination_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[CryptoPricesResponse]:
+        """
+        Returns per-second price data for a Binance trading pair. When called without a time range, returns the latest price. With `start_time` and `end_time`, returns historical per-second prices in newest-first order. Supports cursor-based pagination for large result sets. Unknown or invalid symbols return `200` with `{"prices":[]}` and omit `total`.
+
+        Parameters
+        ----------
+        currency : str
+            Binance trading pair (e.g. `btcusdt`, `ethusdt`, `solusdt`). Must contain only alphanumeric characters (no hyphens, underscores, or other separators). Uppercase is accepted and automatically lowercased (e.g. `BTCUSDT` → `btcusdt`). Must be a valid Binance symbol; unknown symbols return `200` with an empty `prices` array.
+
+        start_time : typing.Optional[int]
+            Start of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        end_time : typing.Optional[int]
+            End of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        limit : typing.Optional[int]
+            Maximum number of prices to return. Defaults to 100 when a time range is present. Values above 100 are silently clamped to 100. Without a time range, this parameter is ignored — the endpoint always returns the single latest price.
+
+        pagination_key : typing.Optional[str]
+            Base64-encoded cursor from a previous response to fetch the next page of results.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[CryptoPricesResponse]
+            Crypto price data
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/crypto-prices/binance",
+            method="GET",
+            params={
+                "currency": currency,
+                "start_time": start_time,
+                "end_time": end_time,
+                "limit": limit,
+                "pagination_key": pagination_key,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CryptoPricesResponse,
+                    parse_obj_as(
+                        type_=CryptoPricesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPredictorSDK:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -237,6 +374,141 @@ class AsyncRawPredictorSDK:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_binance_crypto_prices(
+        self,
+        *,
+        currency: str,
+        start_time: typing.Optional[int] = None,
+        end_time: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        pagination_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[CryptoPricesResponse]:
+        """
+        Returns per-second price data for a Binance trading pair. When called without a time range, returns the latest price. With `start_time` and `end_time`, returns historical per-second prices in newest-first order. Supports cursor-based pagination for large result sets. Unknown or invalid symbols return `200` with `{"prices":[]}` and omit `total`.
+
+        Parameters
+        ----------
+        currency : str
+            Binance trading pair (e.g. `btcusdt`, `ethusdt`, `solusdt`). Must contain only alphanumeric characters (no hyphens, underscores, or other separators). Uppercase is accepted and automatically lowercased (e.g. `BTCUSDT` → `btcusdt`). Must be a valid Binance symbol; unknown symbols return `200` with an empty `prices` array.
+
+        start_time : typing.Optional[int]
+            Start of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        end_time : typing.Optional[int]
+            End of the time range as a Unix timestamp in milliseconds (inclusive). Negative values are clamped to 0.
+
+        limit : typing.Optional[int]
+            Maximum number of prices to return. Defaults to 100 when a time range is present. Values above 100 are silently clamped to 100. Without a time range, this parameter is ignored — the endpoint always returns the single latest price.
+
+        pagination_key : typing.Optional[str]
+            Base64-encoded cursor from a previous response to fetch the next page of results.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[CryptoPricesResponse]
+            Crypto price data
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/crypto-prices/binance",
+            method="GET",
+            params={
+                "currency": currency,
+                "start_time": start_time,
+                "end_time": end_time,
+                "limit": limit,
+                "pagination_key": pagination_key,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CryptoPricesResponse,
+                    parse_obj_as(
+                        type_=CryptoPricesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,

@@ -6,8 +6,16 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ErrorResponse, PlatformMarket, PlatformMarketPlatform, SportsMatchingResponse
+    from .types import (
+        CryptoPriceItem,
+        CryptoPricesResponse,
+        ErrorResponse,
+        PlatformMarket,
+        PlatformMarketPlatform,
+        SportsMatchingResponse,
+    )
     from .errors import (
+        BadGatewayError,
         BadRequestError,
         ForbiddenError,
         ServiceUnavailableError,
@@ -19,7 +27,10 @@ if typing.TYPE_CHECKING:
     from .environment import PredictorSDKEnvironment
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncPredictorSDK": ".client",
+    "BadGatewayError": ".errors",
     "BadRequestError": ".errors",
+    "CryptoPriceItem": ".types",
+    "CryptoPricesResponse": ".types",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "ErrorResponse": ".types",
@@ -58,7 +69,10 @@ def __dir__():
 
 __all__ = [
     "AsyncPredictorSDK",
+    "BadGatewayError",
     "BadRequestError",
+    "CryptoPriceItem",
+    "CryptoPricesResponse",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "ErrorResponse",
