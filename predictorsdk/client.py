@@ -9,6 +9,7 @@ from .core.request_options import RequestOptions
 from .environment import PredictorSDKEnvironment
 from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
 from .types.crypto_prices_response import CryptoPricesResponse
+from .types.markets_list_response import MarketsListResponse
 from .types.sports_matching_response import SportsMatchingResponse
 
 
@@ -98,6 +99,9 @@ class PredictorSDK:
     def get_sports_matching_markets(
         self,
         *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        include_settled: typing.Optional[bool] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
@@ -105,21 +109,30 @@ class PredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Provide a Kalshi event ticker or Polymarket market slug to look up the equivalent market on other platforms. When called without parameters, returns all currently matched sports markets.
+        Find cross-platform market matches for sports events. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`). Provide a Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination.
 
         Parameters
         ----------
+        limit : typing.Optional[int]
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
+
+        include_settled : typing.Optional[bool]
+            When `true`, include settled/archived events alongside currently live matches. Defaults to `false`.
+
         kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request.
+            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -139,12 +152,53 @@ class PredictorSDK:
         client.get_sports_matching_markets()
         """
         _response = self._raw_client.get_sports_matching_markets(
+            limit=limit,
+            cursor=cursor,
+            include_settled=include_settled,
             kalshi_event_ticker=kalshi_event_ticker,
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
             request_options=request_options,
         )
+        return _response.data
+
+    def get_markets(
+        self,
+        *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> MarketsListResponse:
+        """
+        Returns a paginated list of unified markets from all supported prediction market providers. Uses cursor-based pagination with default `limit=25`, max `100`.
+
+        Parameters
+        ----------
+        limit : typing.Optional[int]
+            Maximum number of markets to return per page. Range 1–100, default 25.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        MarketsListResponse
+            Paginated list of markets
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_markets()
+        """
+        _response = self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
         return _response.data
 
     def get_binance_crypto_prices(
@@ -314,6 +368,9 @@ class AsyncPredictorSDK:
     async def get_sports_matching_markets(
         self,
         *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        include_settled: typing.Optional[bool] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
@@ -321,21 +378,30 @@ class AsyncPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Provide a Kalshi event ticker or Polymarket market slug to look up the equivalent market on other platforms. When called without parameters, returns all currently matched sports markets.
+        Find cross-platform market matches for sports events. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`). Provide a Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination.
 
         Parameters
         ----------
+        limit : typing.Optional[int]
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
+
+        include_settled : typing.Optional[bool]
+            When `true`, include settled/archived events alongside currently live matches. Defaults to `false`.
+
         kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request.
+            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -363,12 +429,61 @@ class AsyncPredictorSDK:
         asyncio.run(main())
         """
         _response = await self._raw_client.get_sports_matching_markets(
+            limit=limit,
+            cursor=cursor,
+            include_settled=include_settled,
             kalshi_event_ticker=kalshi_event_ticker,
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
             request_options=request_options,
         )
+        return _response.data
+
+    async def get_markets(
+        self,
+        *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> MarketsListResponse:
+        """
+        Returns a paginated list of unified markets from all supported prediction market providers. Uses cursor-based pagination with default `limit=25`, max `100`.
+
+        Parameters
+        ----------
+        limit : typing.Optional[int]
+            Maximum number of markets to return per page. Range 1–100, default 25.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        MarketsListResponse
+            Paginated list of markets
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_markets()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
         return _response.data
 
     async def get_binance_crypto_prices(

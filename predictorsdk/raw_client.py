@@ -12,11 +12,13 @@ from .core.request_options import RequestOptions
 from .errors.bad_gateway_error import BadGatewayError
 from .errors.bad_request_error import BadRequestError
 from .errors.forbidden_error import ForbiddenError
+from .errors.internal_server_error import InternalServerError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
 from .errors.unauthorized_error import UnauthorizedError
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
+from .types.markets_list_response import MarketsListResponse
 from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
 
@@ -28,6 +30,9 @@ class RawPredictorSDK:
     def get_sports_matching_markets(
         self,
         *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        include_settled: typing.Optional[bool] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
@@ -35,21 +40,30 @@ class RawPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SportsMatchingResponse]:
         """
-        Find cross-platform market matches for sports events. Provide a Kalshi event ticker or Polymarket market slug to look up the equivalent market on other platforms. When called without parameters, returns all currently matched sports markets.
+        Find cross-platform market matches for sports events. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`). Provide a Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination.
 
         Parameters
         ----------
+        limit : typing.Optional[int]
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
+
+        include_settled : typing.Optional[bool]
+            When `true`, include settled/archived events alongside currently live matches. Defaults to `false`.
+
         kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request.
+            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -63,6 +77,9 @@ class RawPredictorSDK:
             "v1/matching-markets/sports",
             method="GET",
             params={
+                "limit": limit,
+                "cursor": cursor,
+                "include_settled": include_settled,
                 "kalshi_event_ticker": kalshi_event_ticker,
                 "polymarket_market_slug": polymarket_market_slug,
                 "predict_market_id": predict_market_id,
@@ -115,6 +132,126 @@ class RawPredictorSDK:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_markets(
+        self,
+        *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[MarketsListResponse]:
+        """
+        Returns a paginated list of unified markets from all supported prediction market providers. Uses cursor-based pagination with default `limit=25`, max `100`.
+
+        Parameters
+        ----------
+        limit : typing.Optional[int]
+            Maximum number of markets to return per page. Range 1–100, default 25.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[MarketsListResponse]
+            Paginated list of markets
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/markets",
+            method="GET",
+            params={
+                "limit": limit,
+                "cursor": cursor,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    MarketsListResponse,
+                    parse_obj_as(
+                        type_=MarketsListResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -287,6 +424,9 @@ class AsyncRawPredictorSDK:
     async def get_sports_matching_markets(
         self,
         *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        include_settled: typing.Optional[bool] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
@@ -294,21 +434,30 @@ class AsyncRawPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SportsMatchingResponse]:
         """
-        Find cross-platform market matches for sports events. Provide a Kalshi event ticker or Polymarket market slug to look up the equivalent market on other platforms. When called without parameters, returns all currently matched sports markets.
+        Find cross-platform market matches for sports events. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`). Provide a Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination.
 
         Parameters
         ----------
+        limit : typing.Optional[int]
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
+
+        include_settled : typing.Optional[bool]
+            When `true`, include settled/archived events alongside currently live matches. Defaults to `false`.
+
         kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request.
+            Kalshi event ticker(s) to find matching markets for (e.g. `KXNFLGAME-25AUG16ARIDEN`). Provide the parameter multiple times for multiple tickers. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-ari-den-2025-08-16`). Provide the parameter multiple times for multiple slugs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            Predict market ID(s) to find matching markets for (e.g. `110629`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request.
+            SX Bet market ID(s) to find matching markets for (e.g. `0x4c000abdbf197ef32ecdf15561b1d636f1e5b02629f466678757fd83e2ec3599`). Provide the parameter multiple times for multiple IDs. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -322,6 +471,9 @@ class AsyncRawPredictorSDK:
             "v1/matching-markets/sports",
             method="GET",
             params={
+                "limit": limit,
+                "cursor": cursor,
+                "include_settled": include_settled,
                 "kalshi_event_ticker": kalshi_event_ticker,
                 "polymarket_market_slug": polymarket_market_slug,
                 "predict_market_id": predict_market_id,
@@ -374,6 +526,126 @@ class AsyncRawPredictorSDK:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_markets(
+        self,
+        *,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[MarketsListResponse]:
+        """
+        Returns a paginated list of unified markets from all supported prediction market providers. Uses cursor-based pagination with default `limit=25`, max `100`.
+
+        Parameters
+        ----------
+        limit : typing.Optional[int]
+            Maximum number of markets to return per page. Range 1–100, default 25.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[MarketsListResponse]
+            Paginated list of markets
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/markets",
+            method="GET",
+            params={
+                "limit": limit,
+                "cursor": cursor,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    MarketsListResponse,
+                    parse_obj_as(
+                        type_=MarketsListResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,

@@ -36,6 +36,7 @@ predictorsdk/errors/__init__.py
 predictorsdk/errors/bad_gateway_error.py
 predictorsdk/errors/bad_request_error.py
 predictorsdk/errors/forbidden_error.py
+predictorsdk/errors/internal_server_error.py
 predictorsdk/errors/service_unavailable_error.py
 predictorsdk/errors/too_many_requests_error.py
 predictorsdk/errors/unauthorized_error.py
@@ -45,6 +46,10 @@ predictorsdk/types/__init__.py
 predictorsdk/types/crypto_price_item.py
 predictorsdk/types/crypto_prices_response.py
 predictorsdk/types/error_response.py
+predictorsdk/types/markets_list_response.py
+predictorsdk/types/pagination_block.py
 predictorsdk/types/platform_market.py
 predictorsdk/types/platform_market_platform.py
 predictorsdk/types/sports_matching_response.py
+predictorsdk/types/unified_market.py
+predictorsdk/types/unified_market_provider.py

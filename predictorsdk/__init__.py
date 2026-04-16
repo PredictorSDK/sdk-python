@@ -10,14 +10,19 @@ if typing.TYPE_CHECKING:
         CryptoPriceItem,
         CryptoPricesResponse,
         ErrorResponse,
+        MarketsListResponse,
+        PaginationBlock,
         PlatformMarket,
         PlatformMarketPlatform,
         SportsMatchingResponse,
+        UnifiedMarket,
+        UnifiedMarketProvider,
     )
     from .errors import (
         BadGatewayError,
         BadRequestError,
         ForbiddenError,
+        InternalServerError,
         ServiceUnavailableError,
         TooManyRequestsError,
         UnauthorizedError,
@@ -35,6 +40,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "ErrorResponse": ".types",
     "ForbiddenError": ".errors",
+    "InternalServerError": ".errors",
+    "MarketsListResponse": ".types",
+    "PaginationBlock": ".types",
     "PlatformMarket": ".types",
     "PlatformMarketPlatform": ".types",
     "PredictorSDK": ".client",
@@ -43,6 +51,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SportsMatchingResponse": ".types",
     "TooManyRequestsError": ".errors",
     "UnauthorizedError": ".errors",
+    "UnifiedMarket": ".types",
+    "UnifiedMarketProvider": ".types",
 }
 
 
@@ -77,6 +87,9 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "ErrorResponse",
     "ForbiddenError",
+    "InternalServerError",
+    "MarketsListResponse",
+    "PaginationBlock",
     "PlatformMarket",
     "PlatformMarketPlatform",
     "PredictorSDK",
@@ -85,4 +98,6 @@ __all__ = [
     "SportsMatchingResponse",
     "TooManyRequestsError",
     "UnauthorizedError",
+    "UnifiedMarket",
+    "UnifiedMarketProvider",
 ]

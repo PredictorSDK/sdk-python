@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .pagination_block import PaginationBlock
 from .platform_market import PlatformMarket
 
 
@@ -11,6 +12,11 @@ class SportsMatchingResponse(UniversalBaseModel):
     markets: typing.Dict[str, typing.List[PlatformMarket]] = pydantic.Field()
     """
     Key-value pairs where each key is the queried identifier (Kalshi event ticker, Polymarket slug, or canonical event ID when no filter is provided) and each value is an array of platform market objects.
+    """
+
+    pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)
+    """
+    Pagination metadata for the current page. Present in list mode (no platform-ID filter). Absent in lookup mode since the response is bounded by the filter.
     """
 
     if IS_PYDANTIC_V2:
