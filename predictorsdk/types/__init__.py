@@ -11,6 +11,8 @@ if typing.TYPE_CHECKING:
     from .error_response import ErrorResponse
     from .markets_list_response import MarketsListResponse
     from .pagination_block import PaginationBlock
+    from .payment_required_error_action import PaymentRequiredErrorAction
+    from .payment_required_error_body import PaymentRequiredErrorBody
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
     from .sports_matching_response import SportsMatchingResponse
@@ -22,6 +24,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ErrorResponse": ".error_response",
     "MarketsListResponse": ".markets_list_response",
     "PaginationBlock": ".pagination_block",
+    "PaymentRequiredErrorAction": ".payment_required_error_action",
+    "PaymentRequiredErrorBody": ".payment_required_error_body",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
     "SportsMatchingResponse": ".sports_matching_response",
@@ -57,6 +61,8 @@ __all__ = [
     "ErrorResponse",
     "MarketsListResponse",
     "PaginationBlock",
+    "PaymentRequiredErrorAction",
+    "PaymentRequiredErrorBody",
     "PlatformMarket",
     "PlatformMarketPlatform",
     "SportsMatchingResponse",

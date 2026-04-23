@@ -12,13 +12,14 @@ from .core.request_options import RequestOptions
 from .errors.bad_gateway_error import BadGatewayError
 from .errors.bad_request_error import BadRequestError
 from .errors.forbidden_error import ForbiddenError
-from .errors.internal_server_error import InternalServerError
+from .errors.payment_required_error import PaymentRequiredError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
 from .errors.unauthorized_error import UnauthorizedError
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
 from .types.markets_list_response import MarketsListResponse
+from .types.payment_required_error_body import PaymentRequiredErrorBody
 from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
 
@@ -115,6 +116,17 @@ class RawPredictorSDK:
                         ErrorResponse,
                         parse_obj_as(
                             type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -228,6 +240,17 @@ class RawPredictorSDK:
                         ),
                     ),
                 )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
@@ -241,17 +264,6 @@ class RawPredictorSDK:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        ErrorResponse,
-                        parse_obj_as(
-                            type_=ErrorResponse,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -359,6 +371,17 @@ class RawPredictorSDK:
                         ErrorResponse,
                         parse_obj_as(
                             type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -513,6 +536,17 @@ class AsyncRawPredictorSDK:
                         ),
                     ),
                 )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
@@ -622,6 +656,17 @@ class AsyncRawPredictorSDK:
                         ),
                     ),
                 )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
@@ -635,17 +680,6 @@ class AsyncRawPredictorSDK:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        ErrorResponse,
-                        parse_obj_as(
-                            type_=ErrorResponse,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 500:
-                raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -753,6 +787,17 @@ class AsyncRawPredictorSDK:
                         ErrorResponse,
                         parse_obj_as(
                             type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
