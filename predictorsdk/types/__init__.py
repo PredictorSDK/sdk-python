@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
     from .payment_required_error_body import PaymentRequiredErrorBody
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
+    from .polymarket_wallet_response import PolymarketWalletResponse
     from .sports_matching_response import SportsMatchingResponse
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
@@ -28,6 +29,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PaymentRequiredErrorBody": ".payment_required_error_body",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
+    "PolymarketWalletResponse": ".polymarket_wallet_response",
     "SportsMatchingResponse": ".sports_matching_response",
     "UnifiedMarket": ".unified_market",
     "UnifiedMarketProvider": ".unified_market_provider",
@@ -65,6 +67,7 @@ __all__ = [
     "PaymentRequiredErrorBody",
     "PlatformMarket",
     "PlatformMarketPlatform",
+    "PolymarketWalletResponse",
     "SportsMatchingResponse",
     "UnifiedMarket",
     "UnifiedMarketProvider",

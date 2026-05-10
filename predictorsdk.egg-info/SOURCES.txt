@@ -36,6 +36,7 @@ predictorsdk/errors/__init__.py
 predictorsdk/errors/bad_gateway_error.py
 predictorsdk/errors/bad_request_error.py
 predictorsdk/errors/forbidden_error.py
+predictorsdk/errors/not_found_error.py
 predictorsdk/errors/payment_required_error.py
 predictorsdk/errors/service_unavailable_error.py
 predictorsdk/errors/too_many_requests_error.py
@@ -52,6 +53,7 @@ predictorsdk/types/payment_required_error_action.py
 predictorsdk/types/payment_required_error_body.py
 predictorsdk/types/platform_market.py
 predictorsdk/types/platform_market_platform.py
+predictorsdk/types/polymarket_wallet_response.py
 predictorsdk/types/sports_matching_response.py
 predictorsdk/types/unified_market.py
 predictorsdk/types/unified_market_provider.py

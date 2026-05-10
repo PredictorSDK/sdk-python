@@ -9,6 +9,7 @@ if typing.TYPE_CHECKING:
     from .bad_gateway_error import BadGatewayError
     from .bad_request_error import BadRequestError
     from .forbidden_error import ForbiddenError
+    from .not_found_error import NotFoundError
     from .payment_required_error import PaymentRequiredError
     from .service_unavailable_error import ServiceUnavailableError
     from .too_many_requests_error import TooManyRequestsError
@@ -17,6 +18,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BadGatewayError": ".bad_gateway_error",
     "BadRequestError": ".bad_request_error",
     "ForbiddenError": ".forbidden_error",
+    "NotFoundError": ".not_found_error",
     "PaymentRequiredError": ".payment_required_error",
     "ServiceUnavailableError": ".service_unavailable_error",
     "TooManyRequestsError": ".too_many_requests_error",
@@ -49,6 +51,7 @@ __all__ = [
     "BadGatewayError",
     "BadRequestError",
     "ForbiddenError",
+    "NotFoundError",
     "PaymentRequiredError",
     "ServiceUnavailableError",
     "TooManyRequestsError",

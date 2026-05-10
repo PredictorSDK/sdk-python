@@ -10,6 +10,7 @@ from .environment import PredictorSDKEnvironment
 from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.markets_list_response import MarketsListResponse
+from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
 
 
@@ -257,6 +258,52 @@ class PredictorSDK:
             limit=limit,
             pagination_key=pagination_key,
             request_options=request_options,
+        )
+        return _response.data
+
+    def get_polymarket_wallet(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PolymarketWalletResponse:
+        """
+        Returns the public profile (image and display name) for a Polymarket wallet. Accepts either a wallet `address` (proxy or signer EOA) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        When `address` is the underlying signer EOA, the endpoint resolves it to the deterministic proxy address and returns the proxy's profile, with `signer` echoing the input.
+
+        When `username` is supplied, the endpoint resolves it to the wallet via Polymarket's profile search. Match is case-insensitive and exact: a query of `Theo` resolves the user literally named `theo` but does not resolve `theo46` or `Theo47`. A leading `@` is accepted (and stripped) as a convenience for callers used to Twitter-style handles. `signer` is always `null` on the username path. Profiles that don't exist (or only match fuzzily) return `404`.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Wallet address to look up. May be a Polymarket proxy address or the underlying signer EOA — the endpoint resolves either form. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to look up. Match is case-insensitive and exact against the user's stored `name` (so `Car`, `car`, and `CAR` all resolve, but `Theo` does not match `Theo47`). A leading `@` is accepted and stripped before the lookup. Mutually exclusive with `address`; exactly one of the two is required. Example: `Car`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PolymarketWalletResponse
+            Public profile for the wallet
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_polymarket_wallet(
+            address="0x7c3db723f1d4d8cb9c550095203b686cb11e5c6b",
+        )
+        """
+        _response = self._raw_client.get_polymarket_wallet(
+            address=address, username=username, request_options=request_options
         )
         return _response.data
 
@@ -550,6 +597,60 @@ class AsyncPredictorSDK:
             limit=limit,
             pagination_key=pagination_key,
             request_options=request_options,
+        )
+        return _response.data
+
+    async def get_polymarket_wallet(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PolymarketWalletResponse:
+        """
+        Returns the public profile (image and display name) for a Polymarket wallet. Accepts either a wallet `address` (proxy or signer EOA) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        When `address` is the underlying signer EOA, the endpoint resolves it to the deterministic proxy address and returns the proxy's profile, with `signer` echoing the input.
+
+        When `username` is supplied, the endpoint resolves it to the wallet via Polymarket's profile search. Match is case-insensitive and exact: a query of `Theo` resolves the user literally named `theo` but does not resolve `theo46` or `Theo47`. A leading `@` is accepted (and stripped) as a convenience for callers used to Twitter-style handles. `signer` is always `null` on the username path. Profiles that don't exist (or only match fuzzily) return `404`.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Wallet address to look up. May be a Polymarket proxy address or the underlying signer EOA — the endpoint resolves either form. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to look up. Match is case-insensitive and exact against the user's stored `name` (so `Car`, `car`, and `CAR` all resolve, but `Theo` does not match `Theo47`). A leading `@` is accepted and stripped before the lookup. Mutually exclusive with `address`; exactly one of the two is required. Example: `Car`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PolymarketWalletResponse
+            Public profile for the wallet
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_polymarket_wallet(
+                address="0x7c3db723f1d4d8cb9c550095203b686cb11e5c6b",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_polymarket_wallet(
+            address=address, username=username, request_options=request_options
         )
         return _response.data
 

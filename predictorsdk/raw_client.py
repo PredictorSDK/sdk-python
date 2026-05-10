@@ -12,6 +12,7 @@ from .core.request_options import RequestOptions
 from .errors.bad_gateway_error import BadGatewayError
 from .errors.bad_request_error import BadRequestError
 from .errors.forbidden_error import ForbiddenError
+from .errors.not_found_error import NotFoundError
 from .errors.payment_required_error import PaymentRequiredError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
@@ -20,6 +21,7 @@ from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
 from .types.markets_list_response import MarketsListResponse
 from .types.payment_required_error_body import PaymentRequiredErrorBody
+from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
 
@@ -439,6 +441,152 @@ class RawPredictorSDK:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def get_polymarket_wallet(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[PolymarketWalletResponse]:
+        """
+        Returns the public profile (image and display name) for a Polymarket wallet. Accepts either a wallet `address` (proxy or signer EOA) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        When `address` is the underlying signer EOA, the endpoint resolves it to the deterministic proxy address and returns the proxy's profile, with `signer` echoing the input.
+
+        When `username` is supplied, the endpoint resolves it to the wallet via Polymarket's profile search. Match is case-insensitive and exact: a query of `Theo` resolves the user literally named `theo` but does not resolve `theo46` or `Theo47`. A leading `@` is accepted (and stripped) as a convenience for callers used to Twitter-style handles. `signer` is always `null` on the username path. Profiles that don't exist (or only match fuzzily) return `404`.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Wallet address to look up. May be a Polymarket proxy address or the underlying signer EOA — the endpoint resolves either form. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to look up. Match is case-insensitive and exact against the user's stored `name` (so `Car`, `car`, and `CAR` all resolve, but `Theo` does not match `Theo47`). A leading `@` is accepted and stripped before the lookup. Mutually exclusive with `address`; exactly one of the two is required. Example: `Car`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[PolymarketWalletResponse]
+            Public profile for the wallet
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/polymarket/wallet",
+            method="GET",
+            params={
+                "address": address,
+                "username": username,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PolymarketWalletResponse,
+                    parse_obj_as(
+                        type_=PolymarketWalletResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPredictorSDK:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -804,6 +952,152 @@ class AsyncRawPredictorSDK:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_polymarket_wallet(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[PolymarketWalletResponse]:
+        """
+        Returns the public profile (image and display name) for a Polymarket wallet. Accepts either a wallet `address` (proxy or signer EOA) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        When `address` is the underlying signer EOA, the endpoint resolves it to the deterministic proxy address and returns the proxy's profile, with `signer` echoing the input.
+
+        When `username` is supplied, the endpoint resolves it to the wallet via Polymarket's profile search. Match is case-insensitive and exact: a query of `Theo` resolves the user literally named `theo` but does not resolve `theo46` or `Theo47`. A leading `@` is accepted (and stripped) as a convenience for callers used to Twitter-style handles. `signer` is always `null` on the username path. Profiles that don't exist (or only match fuzzily) return `404`.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Wallet address to look up. May be a Polymarket proxy address or the underlying signer EOA — the endpoint resolves either form. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to look up. Match is case-insensitive and exact against the user's stored `name` (so `Car`, `car`, and `CAR` all resolve, but `Theo` does not match `Theo47`). A leading `@` is accepted and stripped before the lookup. Mutually exclusive with `address`; exactly one of the two is required. Example: `Car`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[PolymarketWalletResponse]
+            Public profile for the wallet
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/polymarket/wallet",
+            method="GET",
+            params={
+                "address": address,
+                "username": username,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PolymarketWalletResponse,
+                    parse_obj_as(
+                        type_=PolymarketWalletResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
