@@ -14,7 +14,7 @@ class PaginationBlock(UniversalBaseModel):
 
     total: int = pydantic.Field()
     """
-    Total matching items across all pages.
+    Total matching items across all pages, when known. Set to `0` for endpoints whose upstream does not expose a total count — clients should rely on `has_more` and `next_cursor` to paginate in that case.
     """
 
     has_more: bool = pydantic.Field()

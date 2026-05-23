@@ -9,7 +9,10 @@ from .core.request_options import RequestOptions
 from .environment import PredictorSDKEnvironment
 from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
 from .types.crypto_prices_response import CryptoPricesResponse
+from .types.event_response import EventResponse
+from .types.get_event_request_platform import GetEventRequestPlatform
 from .types.markets_list_response import MarketsListResponse
+from .types.polymarket_positions_response import PolymarketPositionsResponse
 from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
 
@@ -305,6 +308,108 @@ class PredictorSDK:
         _response = self._raw_client.get_polymarket_wallet(
             address=address, username=username, request_options=request_options
         )
+        return _response.data
+
+    def list_polymarket_wallet_positions(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PolymarketPositionsResponse:
+        """
+        Returns the current Polymarket positions for a wallet. Accepts either a wallet `address` (proxy address only — see note below) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        v1 surfaces a minimal field set so the endpoint scaffolding can be verified end-to-end: `condition_id` (which market), `outcome` (which side), and `shares` (how much). Title/slug, avg/current price, PnL (`cash_pnl`, `realized_pnl`), `redeemable`/`mergeable` flags, and event metadata will be added in follow-ups.
+
+        `total` in the pagination block is always `0` because the upstream Data API does not return a total count; rely on `has_more` + `next_cursor` to paginate.
+
+        **EOA inputs are not auto-resolved on this endpoint.** Unlike `/v1/polymarket/wallet`, this endpoint does not perform the EOA→proxy CREATE2 resolution. Callers with a signer EOA should call `/v1/polymarket/wallet` first to resolve the proxy, then pass the returned `address`. Passing an EOA directly will return an empty `data` array.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Polymarket proxy wallet address. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to resolve to a proxy wallet. Match is case-insensitive and exact against the user's stored `name`. A leading `@` is accepted and stripped. Mutually exclusive with `address`.
+
+        limit : typing.Optional[int]
+            Number of items per page. Defaults to 50.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.next_cursor`. Bound to the resolved wallet address — replaying a cursor against a different identifier returns `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PolymarketPositionsResponse
+            Wallet positions
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.list_polymarket_wallet_positions(
+            address="0x7c3db723f1d4d8cb9c550095203b686cb11e5c6b",
+        )
+        """
+        _response = self._raw_client.list_polymarket_wallet_positions(
+            address=address, username=username, limit=limit, cursor=cursor, request_options=request_options
+        )
+        return _response.data
+
+    def get_event(
+        self,
+        event_id: str,
+        *,
+        platform: typing.Optional[GetEventRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> EventResponse:
+        """
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+
+        Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
+
+        **Kalshi sibling fanout.** A single Kalshi sports game lives across multiple event tickers that share a game suffix — e.g. `KXMLBGAME-26MAY221840CLEPHI` holds the moneyline, `KXMLBF5TOTAL-26MAY221840CLEPHI` holds the totals, and so on. When the supplied event_ticker belongs to a sport in the sibling registry (MLB, NBA, NFL, NHL, WNBA today), this endpoint fans out across known sibling series in parallel and merges their markets into one response. Siblings that don't exist for a particular game silently drop. Siblings that error are reported under `fanout.siblings_missing`; the primary event still returns 200 in that case. Only the primary fetch failing produces a 4xx/5xx — partial fanouts never fail the request.
+
+        **Polymarket** events already nest the moneyline plus all spread/totals/game-level prop markets under a single event slug, so no fanout is performed. **SX Bet** fixtures similarly bundle game lines per `eventId`. **Predict** currently treats `event_id` as a market identifier and wraps the single market as a 1-element event response, since the upstream `event` concept on Predict is closer to a category than to a multi-market container.
+
+        Parameters
+        ----------
+        event_id : str
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
+
+        platform : typing.Optional[GetEventRequestPlatform]
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        EventResponse
+            Event with nested markets
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_event(
+            event_id="KXMLBGAME-26MAY221840CLEPHI",
+        )
+        """
+        _response = self._raw_client.get_event(event_id, platform=platform, request_options=request_options)
         return _response.data
 
 
@@ -652,6 +757,124 @@ class AsyncPredictorSDK:
         _response = await self._raw_client.get_polymarket_wallet(
             address=address, username=username, request_options=request_options
         )
+        return _response.data
+
+    async def list_polymarket_wallet_positions(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PolymarketPositionsResponse:
+        """
+        Returns the current Polymarket positions for a wallet. Accepts either a wallet `address` (proxy address only — see note below) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        v1 surfaces a minimal field set so the endpoint scaffolding can be verified end-to-end: `condition_id` (which market), `outcome` (which side), and `shares` (how much). Title/slug, avg/current price, PnL (`cash_pnl`, `realized_pnl`), `redeemable`/`mergeable` flags, and event metadata will be added in follow-ups.
+
+        `total` in the pagination block is always `0` because the upstream Data API does not return a total count; rely on `has_more` + `next_cursor` to paginate.
+
+        **EOA inputs are not auto-resolved on this endpoint.** Unlike `/v1/polymarket/wallet`, this endpoint does not perform the EOA→proxy CREATE2 resolution. Callers with a signer EOA should call `/v1/polymarket/wallet` first to resolve the proxy, then pass the returned `address`. Passing an EOA directly will return an empty `data` array.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Polymarket proxy wallet address. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to resolve to a proxy wallet. Match is case-insensitive and exact against the user's stored `name`. A leading `@` is accepted and stripped. Mutually exclusive with `address`.
+
+        limit : typing.Optional[int]
+            Number of items per page. Defaults to 50.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.next_cursor`. Bound to the resolved wallet address — replaying a cursor against a different identifier returns `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PolymarketPositionsResponse
+            Wallet positions
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.list_polymarket_wallet_positions(
+                address="0x7c3db723f1d4d8cb9c550095203b686cb11e5c6b",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_polymarket_wallet_positions(
+            address=address, username=username, limit=limit, cursor=cursor, request_options=request_options
+        )
+        return _response.data
+
+    async def get_event(
+        self,
+        event_id: str,
+        *,
+        platform: typing.Optional[GetEventRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> EventResponse:
+        """
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+
+        Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
+
+        **Kalshi sibling fanout.** A single Kalshi sports game lives across multiple event tickers that share a game suffix — e.g. `KXMLBGAME-26MAY221840CLEPHI` holds the moneyline, `KXMLBF5TOTAL-26MAY221840CLEPHI` holds the totals, and so on. When the supplied event_ticker belongs to a sport in the sibling registry (MLB, NBA, NFL, NHL, WNBA today), this endpoint fans out across known sibling series in parallel and merges their markets into one response. Siblings that don't exist for a particular game silently drop. Siblings that error are reported under `fanout.siblings_missing`; the primary event still returns 200 in that case. Only the primary fetch failing produces a 4xx/5xx — partial fanouts never fail the request.
+
+        **Polymarket** events already nest the moneyline plus all spread/totals/game-level prop markets under a single event slug, so no fanout is performed. **SX Bet** fixtures similarly bundle game lines per `eventId`. **Predict** currently treats `event_id` as a market identifier and wraps the single market as a 1-element event response, since the upstream `event` concept on Predict is closer to a category than to a multi-market container.
+
+        Parameters
+        ----------
+        event_id : str
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
+
+        platform : typing.Optional[GetEventRequestPlatform]
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        EventResponse
+            Event with nested markets
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_event(
+                event_id="KXMLBGAME-26MAY221840CLEPHI",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_event(event_id, platform=platform, request_options=request_options)
         return _response.data
 
 

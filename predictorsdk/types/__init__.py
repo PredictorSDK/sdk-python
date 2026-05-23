@@ -9,12 +9,19 @@ if typing.TYPE_CHECKING:
     from .crypto_price_item import CryptoPriceItem
     from .crypto_prices_response import CryptoPricesResponse
     from .error_response import ErrorResponse
+    from .event_fanout import EventFanout
+    from .event_market import EventMarket
+    from .event_response import EventResponse
+    from .event_response_platform import EventResponsePlatform
+    from .get_event_request_platform import GetEventRequestPlatform
     from .markets_list_response import MarketsListResponse
     from .pagination_block import PaginationBlock
     from .payment_required_error_action import PaymentRequiredErrorAction
     from .payment_required_error_body import PaymentRequiredErrorBody
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
+    from .polymarket_position import PolymarketPosition
+    from .polymarket_positions_response import PolymarketPositionsResponse
     from .polymarket_wallet_response import PolymarketWalletResponse
     from .sports_matching_response import SportsMatchingResponse
     from .unified_market import UnifiedMarket
@@ -23,12 +30,19 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CryptoPriceItem": ".crypto_price_item",
     "CryptoPricesResponse": ".crypto_prices_response",
     "ErrorResponse": ".error_response",
+    "EventFanout": ".event_fanout",
+    "EventMarket": ".event_market",
+    "EventResponse": ".event_response",
+    "EventResponsePlatform": ".event_response_platform",
+    "GetEventRequestPlatform": ".get_event_request_platform",
     "MarketsListResponse": ".markets_list_response",
     "PaginationBlock": ".pagination_block",
     "PaymentRequiredErrorAction": ".payment_required_error_action",
     "PaymentRequiredErrorBody": ".payment_required_error_body",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
+    "PolymarketPosition": ".polymarket_position",
+    "PolymarketPositionsResponse": ".polymarket_positions_response",
     "PolymarketWalletResponse": ".polymarket_wallet_response",
     "SportsMatchingResponse": ".sports_matching_response",
     "UnifiedMarket": ".unified_market",
@@ -61,12 +75,19 @@ __all__ = [
     "CryptoPriceItem",
     "CryptoPricesResponse",
     "ErrorResponse",
+    "EventFanout",
+    "EventMarket",
+    "EventResponse",
+    "EventResponsePlatform",
+    "GetEventRequestPlatform",
     "MarketsListResponse",
     "PaginationBlock",
     "PaymentRequiredErrorAction",
     "PaymentRequiredErrorBody",
     "PlatformMarket",
     "PlatformMarketPlatform",
+    "PolymarketPosition",
+    "PolymarketPositionsResponse",
     "PolymarketWalletResponse",
     "SportsMatchingResponse",
     "UnifiedMarket",

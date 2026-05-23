@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
+from .core.jsonable_encoder import encode_path_param
 from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
@@ -19,8 +20,11 @@ from .errors.too_many_requests_error import TooManyRequestsError
 from .errors.unauthorized_error import UnauthorizedError
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
+from .types.event_response import EventResponse
+from .types.get_event_request_platform import GetEventRequestPlatform
 from .types.markets_list_response import MarketsListResponse
 from .types.payment_required_error_body import PaymentRequiredErrorBody
+from .types.polymarket_positions_response import PolymarketPositionsResponse
 from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
 from pydantic import ValidationError
@@ -587,6 +591,311 @@ class RawPredictorSDK:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def list_polymarket_wallet_positions(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[PolymarketPositionsResponse]:
+        """
+        Returns the current Polymarket positions for a wallet. Accepts either a wallet `address` (proxy address only — see note below) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        v1 surfaces a minimal field set so the endpoint scaffolding can be verified end-to-end: `condition_id` (which market), `outcome` (which side), and `shares` (how much). Title/slug, avg/current price, PnL (`cash_pnl`, `realized_pnl`), `redeemable`/`mergeable` flags, and event metadata will be added in follow-ups.
+
+        `total` in the pagination block is always `0` because the upstream Data API does not return a total count; rely on `has_more` + `next_cursor` to paginate.
+
+        **EOA inputs are not auto-resolved on this endpoint.** Unlike `/v1/polymarket/wallet`, this endpoint does not perform the EOA→proxy CREATE2 resolution. Callers with a signer EOA should call `/v1/polymarket/wallet` first to resolve the proxy, then pass the returned `address`. Passing an EOA directly will return an empty `data` array.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Polymarket proxy wallet address. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to resolve to a proxy wallet. Match is case-insensitive and exact against the user's stored `name`. A leading `@` is accepted and stripped. Mutually exclusive with `address`.
+
+        limit : typing.Optional[int]
+            Number of items per page. Defaults to 50.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.next_cursor`. Bound to the resolved wallet address — replaying a cursor against a different identifier returns `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[PolymarketPositionsResponse]
+            Wallet positions
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/polymarket/wallet/positions",
+            method="GET",
+            params={
+                "address": address,
+                "username": username,
+                "limit": limit,
+                "cursor": cursor,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PolymarketPositionsResponse,
+                    parse_obj_as(
+                        type_=PolymarketPositionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_event(
+        self,
+        event_id: str,
+        *,
+        platform: typing.Optional[GetEventRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[EventResponse]:
+        """
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+
+        Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
+
+        **Kalshi sibling fanout.** A single Kalshi sports game lives across multiple event tickers that share a game suffix — e.g. `KXMLBGAME-26MAY221840CLEPHI` holds the moneyline, `KXMLBF5TOTAL-26MAY221840CLEPHI` holds the totals, and so on. When the supplied event_ticker belongs to a sport in the sibling registry (MLB, NBA, NFL, NHL, WNBA today), this endpoint fans out across known sibling series in parallel and merges their markets into one response. Siblings that don't exist for a particular game silently drop. Siblings that error are reported under `fanout.siblings_missing`; the primary event still returns 200 in that case. Only the primary fetch failing produces a 4xx/5xx — partial fanouts never fail the request.
+
+        **Polymarket** events already nest the moneyline plus all spread/totals/game-level prop markets under a single event slug, so no fanout is performed. **SX Bet** fixtures similarly bundle game lines per `eventId`. **Predict** currently treats `event_id` as a market identifier and wraps the single market as a 1-element event response, since the upstream `event` concept on Predict is closer to a category than to a multi-market container.
+
+        Parameters
+        ----------
+        event_id : str
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
+
+        platform : typing.Optional[GetEventRequestPlatform]
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[EventResponse]
+            Event with nested markets
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"v1/events/{encode_path_param(event_id)}",
+            method="GET",
+            params={
+                "platform": platform,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    EventResponse,
+                    parse_obj_as(
+                        type_=EventResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPredictorSDK:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -1048,6 +1357,311 @@ class AsyncRawPredictorSDK:
                     PolymarketWalletResponse,
                     parse_obj_as(
                         type_=PolymarketWalletResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def list_polymarket_wallet_positions(
+        self,
+        *,
+        address: typing.Optional[str] = None,
+        username: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        cursor: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[PolymarketPositionsResponse]:
+        """
+        Returns the current Polymarket positions for a wallet. Accepts either a wallet `address` (proxy address only — see note below) or a Polymarket `username`. Exactly one of the two must be supplied — passing both returns `400`.
+
+        v1 surfaces a minimal field set so the endpoint scaffolding can be verified end-to-end: `condition_id` (which market), `outcome` (which side), and `shares` (how much). Title/slug, avg/current price, PnL (`cash_pnl`, `realized_pnl`), `redeemable`/`mergeable` flags, and event metadata will be added in follow-ups.
+
+        `total` in the pagination block is always `0` because the upstream Data API does not return a total count; rely on `has_more` + `next_cursor` to paginate.
+
+        **EOA inputs are not auto-resolved on this endpoint.** Unlike `/v1/polymarket/wallet`, this endpoint does not perform the EOA→proxy CREATE2 resolution. Callers with a signer EOA should call `/v1/polymarket/wallet` first to resolve the proxy, then pass the returned `address`. Passing an EOA directly will return an empty `data` array.
+
+        Parameters
+        ----------
+        address : typing.Optional[str]
+            Polymarket proxy wallet address. Must match `^0x[a-fA-F0-9]{40}$`. Mixed-case input is accepted and lowercased in the response. Mutually exclusive with `username`; exactly one of the two is required.
+
+        username : typing.Optional[str]
+            Polymarket display name to resolve to a proxy wallet. Match is case-insensitive and exact against the user's stored `name`. A leading `@` is accepted and stripped. Mutually exclusive with `address`.
+
+        limit : typing.Optional[int]
+            Number of items per page. Defaults to 50.
+
+        cursor : typing.Optional[str]
+            Opaque cursor from a previous response's `pagination.next_cursor`. Bound to the resolved wallet address — replaying a cursor against a different identifier returns `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[PolymarketPositionsResponse]
+            Wallet positions
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/polymarket/wallet/positions",
+            method="GET",
+            params={
+                "address": address,
+                "username": username,
+                "limit": limit,
+                "cursor": cursor,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PolymarketPositionsResponse,
+                    parse_obj_as(
+                        type_=PolymarketPositionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_event(
+        self,
+        event_id: str,
+        *,
+        platform: typing.Optional[GetEventRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[EventResponse]:
+        """
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+
+        Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
+
+        **Kalshi sibling fanout.** A single Kalshi sports game lives across multiple event tickers that share a game suffix — e.g. `KXMLBGAME-26MAY221840CLEPHI` holds the moneyline, `KXMLBF5TOTAL-26MAY221840CLEPHI` holds the totals, and so on. When the supplied event_ticker belongs to a sport in the sibling registry (MLB, NBA, NFL, NHL, WNBA today), this endpoint fans out across known sibling series in parallel and merges their markets into one response. Siblings that don't exist for a particular game silently drop. Siblings that error are reported under `fanout.siblings_missing`; the primary event still returns 200 in that case. Only the primary fetch failing produces a 4xx/5xx — partial fanouts never fail the request.
+
+        **Polymarket** events already nest the moneyline plus all spread/totals/game-level prop markets under a single event slug, so no fanout is performed. **SX Bet** fixtures similarly bundle game lines per `eventId`. **Predict** currently treats `event_id` as a market identifier and wraps the single market as a 1-element event response, since the upstream `event` concept on Predict is closer to a category than to a multi-market container.
+
+        Parameters
+        ----------
+        event_id : str
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
+
+        platform : typing.Optional[GetEventRequestPlatform]
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[EventResponse]
+            Event with nested markets
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v1/events/{encode_path_param(event_id)}",
+            method="GET",
+            params={
+                "platform": platform,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    EventResponse,
+                    parse_obj_as(
+                        type_=EventResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
