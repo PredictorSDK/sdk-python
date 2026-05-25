@@ -14,6 +14,11 @@ if typing.TYPE_CHECKING:
     from .event_response import EventResponse
     from .event_response_platform import EventResponsePlatform
     from .get_event_request_platform import GetEventRequestPlatform
+    from .get_market_request_platform import GetMarketRequestPlatform
+    from .market_detail_outcome import MarketDetailOutcome
+    from .market_detail_response import MarketDetailResponse
+    from .market_detail_response_provider import MarketDetailResponseProvider
+    from .market_detail_response_status import MarketDetailResponseStatus
     from .markets_list_response import MarketsListResponse
     from .pagination_block import PaginationBlock
     from .payment_required_error_action import PaymentRequiredErrorAction
@@ -35,6 +40,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "EventResponse": ".event_response",
     "EventResponsePlatform": ".event_response_platform",
     "GetEventRequestPlatform": ".get_event_request_platform",
+    "GetMarketRequestPlatform": ".get_market_request_platform",
+    "MarketDetailOutcome": ".market_detail_outcome",
+    "MarketDetailResponse": ".market_detail_response",
+    "MarketDetailResponseProvider": ".market_detail_response_provider",
+    "MarketDetailResponseStatus": ".market_detail_response_status",
     "MarketsListResponse": ".markets_list_response",
     "PaginationBlock": ".pagination_block",
     "PaymentRequiredErrorAction": ".payment_required_error_action",
@@ -80,6 +90,11 @@ __all__ = [
     "EventResponse",
     "EventResponsePlatform",
     "GetEventRequestPlatform",
+    "GetMarketRequestPlatform",
+    "MarketDetailOutcome",
+    "MarketDetailResponse",
+    "MarketDetailResponseProvider",
+    "MarketDetailResponseStatus",
     "MarketsListResponse",
     "PaginationBlock",
     "PaymentRequiredErrorAction",

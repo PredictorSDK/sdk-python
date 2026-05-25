@@ -11,6 +11,8 @@ from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.event_response import EventResponse
 from .types.get_event_request_platform import GetEventRequestPlatform
+from .types.get_market_request_platform import GetMarketRequestPlatform
+from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
 from .types.polymarket_positions_response import PolymarketPositionsResponse
 from .types.polymarket_wallet_response import PolymarketWalletResponse
@@ -205,6 +207,48 @@ class PredictorSDK:
         _response = self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
         return _response.data
 
+    def get_market(
+        self,
+        market_id: str,
+        *,
+        platform: typing.Optional[GetMarketRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> MarketDetailResponse:
+        """
+        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
+
+        Response shape is intentionally strict-universal: only fields every platform's single-market endpoint exposes natively without a second fetch. Pricing lives in SX Bet's order book, Predict's market record has no close timestamp (that lives on the parent category), and SX Bet/Predict don't expose volume or liquidity on the market record in any reliable form — those fields are deliberately omitted from v0 to avoid asymmetric nullable shapes. Additions are additive when the underlying coverage improves.
+
+        Parameters
+        ----------
+        market_id : str
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXMLBGAME-26MAY262005HOUTEX-TEX`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
+
+        platform : typing.Optional[GetMarketRequestPlatform]
+            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        MarketDetailResponse
+            Market detail
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_market(
+            market_id="kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX",
+        )
+        """
+        _response = self._raw_client.get_market(market_id, platform=platform, request_options=request_options)
+        return _response.data
+
     def get_binance_crypto_prices(
         self,
         *,
@@ -374,7 +418,7 @@ class PredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> EventResponse:
         """
-        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous (`KX…` → Kalshi, `L\\d+` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; if `?platform=` is omitted in that case, the service probes Polymarket first and falls back to Predict when Polymarket returns 404. Pass `?platform=` explicitly to skip the probe.
 
         Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
 
@@ -388,7 +432,7 @@ class PredictorSDK:
             Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
 
         platform : typing.Optional[GetEventRequestPlatform]
-            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -638,6 +682,56 @@ class AsyncPredictorSDK:
         _response = await self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
         return _response.data
 
+    async def get_market(
+        self,
+        market_id: str,
+        *,
+        platform: typing.Optional[GetMarketRequestPlatform] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> MarketDetailResponse:
+        """
+        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
+
+        Response shape is intentionally strict-universal: only fields every platform's single-market endpoint exposes natively without a second fetch. Pricing lives in SX Bet's order book, Predict's market record has no close timestamp (that lives on the parent category), and SX Bet/Predict don't expose volume or liquidity on the market record in any reliable form — those fields are deliberately omitted from v0 to avoid asymmetric nullable shapes. Additions are additive when the underlying coverage improves.
+
+        Parameters
+        ----------
+        market_id : str
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXMLBGAME-26MAY262005HOUTEX-TEX`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
+
+        platform : typing.Optional[GetMarketRequestPlatform]
+            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        MarketDetailResponse
+            Market detail
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_market(
+                market_id="kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_market(market_id, platform=platform, request_options=request_options)
+        return _response.data
+
     async def get_binance_crypto_prices(
         self,
         *,
@@ -831,7 +925,7 @@ class AsyncPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> EventResponse:
         """
-        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous; callers must pass `?platform=` for numeric IDs or kebab-case slugs that could belong to either Polymarket or Predict.
+        Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, or a Predict market identifier. The `platform` is inferred from the ID format when unambiguous (`KX…` → Kalshi, `L\\d+` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; if `?platform=` is omitted in that case, the service probes Polymarket first and falls back to Predict when Polymarket returns 404. Pass `?platform=` explicitly to skip the probe.
 
         Response is minimal in v0: each market is returned with its platform-native `market_id` and a human-readable `title`. Pricing, volume, status, and timestamps are intentionally deferred — they'll be added as additive fields to `EventMarket` in a later release. The endpoint mirrors the `/v1/markets` rollout pattern (titles first, fields later).
 
@@ -845,7 +939,7 @@ class AsyncPredictorSDK:
             Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXMLBGAME-26MAY221840CLEPHI`), Polymarket event slug (`mlb-cle-phi-2026-05-22`), SX Bet event id (`L10073358`), Predict market id (`110629`).
 
         platform : typing.Optional[GetEventRequestPlatform]
-            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are ambiguous between Polymarket and Predict; supplying `platform` is required in that case or the response is `400`.
+            Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
