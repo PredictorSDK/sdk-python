@@ -16,6 +16,10 @@ if typing.TYPE_CHECKING:
     from .get_event_request_platform import GetEventRequestPlatform
     from .get_market_request_platform import GetMarketRequestPlatform
     from .market_detail_outcome import MarketDetailOutcome
+    from .market_detail_pricing import MarketDetailPricing
+    from .market_detail_pricing_availability import MarketDetailPricingAvailability
+    from .market_detail_pricing_scale import MarketDetailPricingScale
+    from .market_detail_pricing_source import MarketDetailPricingSource
     from .market_detail_response import MarketDetailResponse
     from .market_detail_response_provider import MarketDetailResponseProvider
     from .market_detail_response_status import MarketDetailResponseStatus
@@ -42,6 +46,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetEventRequestPlatform": ".get_event_request_platform",
     "GetMarketRequestPlatform": ".get_market_request_platform",
     "MarketDetailOutcome": ".market_detail_outcome",
+    "MarketDetailPricing": ".market_detail_pricing",
+    "MarketDetailPricingAvailability": ".market_detail_pricing_availability",
+    "MarketDetailPricingScale": ".market_detail_pricing_scale",
+    "MarketDetailPricingSource": ".market_detail_pricing_source",
     "MarketDetailResponse": ".market_detail_response",
     "MarketDetailResponseProvider": ".market_detail_response_provider",
     "MarketDetailResponseStatus": ".market_detail_response_status",
@@ -92,6 +100,10 @@ __all__ = [
     "GetEventRequestPlatform",
     "GetMarketRequestPlatform",
     "MarketDetailOutcome",
+    "MarketDetailPricing",
+    "MarketDetailPricingAvailability",
+    "MarketDetailPricingScale",
+    "MarketDetailPricingSource",
     "MarketDetailResponse",
     "MarketDetailResponseProvider",
     "MarketDetailResponseStatus",

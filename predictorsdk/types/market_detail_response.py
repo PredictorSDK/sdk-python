@@ -3,15 +3,18 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
 from .market_detail_outcome import MarketDetailOutcome
+from .market_detail_pricing import MarketDetailPricing
 from .market_detail_response_provider import MarketDetailResponseProvider
 from .market_detail_response_status import MarketDetailResponseStatus
 
 
 class MarketDetailResponse(UniversalBaseModel):
     """
-    Single-market detail across all four supported platforms. Strict-universal v0 shape — only fields every platform exposes natively without a second fetch. Pricing/volume/closes_at/ event_id are deliberately omitted, see the endpoint description for the rationale.
+    Single-market detail across all four supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
     """
 
     id: str = pydantic.Field()
@@ -31,7 +34,7 @@ class MarketDetailResponse(UniversalBaseModel):
 
     title: str = pydantic.Field()
     """
-    Human-readable market title. Each platform exposes a slightly different field — Kalshi `title`, Polymarket `question`, Predict `title`, SX Bet composed from team names with outcome-name fallback for outright markets.
+    Human-readable market title. Each platform exposes a slightly different field — Kalshi `title`, Polymarket `question`, Predict `title`, SX Bet composed from outcome labels (team-pair fallback) so a game's moneyline, spread, and total markets stay distinguishable.
     """
 
     status: MarketDetailResponseStatus = pydantic.Field()
@@ -41,7 +44,44 @@ class MarketDetailResponse(UniversalBaseModel):
 
     outcomes: typing.List[MarketDetailOutcome] = pydantic.Field()
     """
-    Outcome labels for the market. Every supported platform models per-market outcomes as a 2-element list in practice (multi-outcome events are modeled as multiple binary markets nested under one event/category). Prices and sizes are deliberately omitted from v0 — see the endpoint description.
+    Outcomes with per-outcome quotes. ORDERING GUARANTEE: `outcomes[0]` is the platform's primary/headline outcome — Kalshi `Yes`, Polymarket's first outcome token (its `bestBid`/`bestAsk` side), Predict `indexSet=1`, SX Bet `outcomeOne`. Render `outcomes[0].price` as the headline probability; do NOT search for an outcome named "Yes" (names are free-text on Predict/SX Bet). Every supported platform models per-market outcomes as a 2-element list in practice (multi-outcome events are modeled as multiple binary markets nested under one event/category); the per-outcome quote shape handles binary and any future multi-outcome record identically with no special-casing.
+    """
+
+    pricing: MarketDetailPricing
+    liquidity_usd: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Resting order-book depth valued in USD — strictly CLOB book depth, never an AMM pool size or a synthetic score. Polymarket exposes it natively (`liquidityNum`); null for Kalshi (its upstream `liquidity_dollars` is deprecated and always zero), Predict (stats is null on the record), and SX Bet (no scalar without summing the raw order book).
+    """
+
+    volume24h_usd: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="volume_24h_usd"),
+        pydantic.Field(
+            alias="volume_24h_usd",
+            description="Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Predict's record).",
+        ),
+    ] = None
+    volume_total_usd: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Lifetime traded volume in USD notional. Same per-platform availability as `volume_24h_usd`. Never fabricated by converting contract counts through a price.
+    """
+
+    volume24h_contracts: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="volume_24h_contracts"),
+        pydantic.Field(
+            alias="volume_24h_contracts",
+            description="Trailing-24h traded volume in contracts (Kalshi `volume_24h_fp`; fractional contracts supported). Omitted for platforms that denominate volume in USD.",
+        ),
+    ] = None
+    volume_total_contracts: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Lifetime traded volume in contracts (Kalshi `volume_fp`). Omitted for platforms that denominate volume in USD.
+    """
+
+    open_interest: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Total outstanding contracts (Kalshi `open_interest_fp`). Contracts, not USD — a positioning gauge kept separate from `liquidity_usd` (depth). Omitted where the platform doesn't expose market-level open interest.
     """
 
     if IS_PYDANTIC_V2:

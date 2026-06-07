@@ -12,6 +12,41 @@ class MarketDetailOutcome(UniversalBaseModel):
     Outcome label as the platform reports it. Kalshi binary markets normalize to `Yes`/`No`; Polymarket parses the stringified outcomes array (also typically `Yes`/`No`); Predict reports per-outcome names; SX Bet uses outcome-one/outcome-two names (e.g. team labels with spreads applied).
     """
 
+    outcome_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Stable per-platform key for this outcome: Kalshi `yes`/`no`, Polymarket CLOB token id, Predict on-chain id, SX Bet `outcomeOne`/`outcomeTwo`. The join key for future per-outcome sub-resources (order-book depth).
+    """
+
+    price: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Current implied probability of this outcome in 0–1 — the headline field, equal to the implied probability on every supported platform. Derivation cascade: mid of bid/ask when two-sided → the single available side → last trade → platform mark (Polymarket `outcomePrices`, which preserves 0/1 resolution marks on settled markets). Because the cascade differs by what each platform exposes, `price` is a DISPLAY number — when comparing across platforms or sizing trades, prefer `bid`/`ask` directly where present. Null when no quote of any kind exists. GUARANTEE: when `pricing.availability` is `live`, `price` is non-null on every outcome. Values are rounded to at most 6 decimal places.
+    """
+
+    bid: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Best bid for this outcome in 0–1 probability. Null when that book side is empty or the platform doesn't publish per-outcome quotes on the record (Polymarket non-primary outcomes) — never synthesized from `1 − ask`.
+    """
+
+    ask: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Best ask (price to take this outcome) in 0–1 probability. For SX Bet this is derived from the opposite side's best maker quote (`1 − bid(other)`), which is that book's actual taker price.
+    """
+
+    last: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Last traded price for this outcome in 0–1 probability. Null where the platform exposes no last-trade on the record (Predict, SX Bet).
+    """
+
+    bid_size: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Resting size at the best bid in native contract/share units (NOT USD). Omitted where the platform publishes no per-side size — Kalshi publishes YES-side sizes only; Polymarket and SX Bet publish none on this path.
+    """
+
+    ask_size: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Resting size at the best ask in native contract/share units. Same availability as `bid_size`.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:

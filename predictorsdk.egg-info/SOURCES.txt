@@ -54,6 +54,10 @@ predictorsdk/types/event_response_platform.py
 predictorsdk/types/get_event_request_platform.py
 predictorsdk/types/get_market_request_platform.py
 predictorsdk/types/market_detail_outcome.py
+predictorsdk/types/market_detail_pricing.py
+predictorsdk/types/market_detail_pricing_availability.py
+predictorsdk/types/market_detail_pricing_scale.py
+predictorsdk/types/market_detail_pricing_source.py
 predictorsdk/types/market_detail_response.py
 predictorsdk/types/market_detail_response_provider.py
 predictorsdk/types/market_detail_response_status.py

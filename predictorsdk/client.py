@@ -215,14 +215,16 @@ class PredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketDetailResponse:
         """
-        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
+        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-26-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
 
-        Response shape is intentionally strict-universal: only fields every platform's single-market endpoint exposes natively without a second fetch. Pricing lives in SX Bet's order book, Predict's market record has no close timestamp (that lives on the parent category), and SX Bet/Predict don't expose volume or liquidity on the market record in any reliable form — those fields are deliberately omitted from v0 to avoid asymmetric nullable shapes. Additions are additive when the underlying coverage improves.
+        Identity fields (id/provider/provider_id/title/status/ outcomes[].name) are strict-universal: every platform's single-market endpoint exposes them natively without a second fetch. close timestamps and parent event ids remain omitted (not nullable) — Predict's close time lives on the parent category and Polymarket's market record carries no event id.
+
+        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet's market record carries no pricing, so the server makes one bounded second fetch to its best-odds order-book endpoint (`pricing.source=orderbook`) and on timeout/error degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
 
         Parameters
         ----------
         market_id : str
-            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXMLBGAME-26MAY262005HOUTEX-TEX`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-26-SAS`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
 
         platform : typing.Optional[GetMarketRequestPlatform]
             Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
@@ -243,7 +245,7 @@ class PredictorSDK:
             token="YOUR_TOKEN",
         )
         client.get_market(
-            market_id="kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX",
+            market_id="kalshi:KXNBA-26-SAS",
         )
         """
         _response = self._raw_client.get_market(market_id, platform=platform, request_options=request_options)
@@ -690,14 +692,16 @@ class AsyncPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketDetailResponse:
         """
-        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
+        Returns a single market across the four supported platforms. The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-26-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters; numeric ids and kebab-case slugs are shared shape between Polymarket and Predict and probe Polymarket first, falling back to Predict on 404. Pass `?platform=` explicitly to skip the probe.
 
-        Response shape is intentionally strict-universal: only fields every platform's single-market endpoint exposes natively without a second fetch. Pricing lives in SX Bet's order book, Predict's market record has no close timestamp (that lives on the parent category), and SX Bet/Predict don't expose volume or liquidity on the market record in any reliable form — those fields are deliberately omitted from v0 to avoid asymmetric nullable shapes. Additions are additive when the underlying coverage improves.
+        Identity fields (id/provider/provider_id/title/status/ outcomes[].name) are strict-universal: every platform's single-market endpoint exposes them natively without a second fetch. close timestamps and parent event ids remain omitted (not nullable) — Predict's close time lives on the parent category and Polymarket's market record carries no event id.
+
+        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet's market record carries no pricing, so the server makes one bounded second fetch to its best-odds order-book endpoint (`pricing.source=orderbook`) and on timeout/error degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
 
         Parameters
         ----------
         market_id : str
-            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXMLBGAME-26MAY262005HOUTEX-TEX`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-26-SAS`), Polymarket numeric id or slug (`540817` or `new-rhianna-album-before-gta-vi-926`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`).
 
         platform : typing.Optional[GetMarketRequestPlatform]
             Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes Polymarket first and falls back to Predict on 404. Pass `platform` explicitly to skip the probe. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
@@ -723,7 +727,7 @@ class AsyncPredictorSDK:
 
         async def main() -> None:
             await client.get_market(
-                market_id="kalshi:KXMLBGAME-26MAY262005HOUTEX-TEX",
+                market_id="kalshi:KXNBA-26-SAS",
             )
 
 
