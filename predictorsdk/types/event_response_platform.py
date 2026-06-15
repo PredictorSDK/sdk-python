@@ -2,4 +2,6 @@
 
 import typing
 
-EventResponsePlatform = typing.Union[typing.Literal["kalshi", "polymarket", "predict", "sxbet"], typing.Any]
+EventResponsePlatform = typing.Union[
+    typing.Literal["kalshi", "polymarket", "predict", "sxbet", "hyperliquid", "alpha-arcade"], typing.Any
+]

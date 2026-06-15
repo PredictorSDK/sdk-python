@@ -2,4 +2,6 @@
 
 import typing
 
-UnifiedMarketProvider = typing.Union[typing.Literal["kalshi", "polymarket", "predict", "sxbet"], typing.Any]
+UnifiedMarketProvider = typing.Union[
+    typing.Literal["kalshi", "polymarket", "predict", "sxbet", "hyperliquid", "alpha-arcade"], typing.Any
+]

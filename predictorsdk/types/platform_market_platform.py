@@ -2,4 +2,6 @@
 
 import typing
 
-PlatformMarketPlatform = typing.Union[typing.Literal["KALSHI", "POLYMARKET", "PREDICT", "SXBET"], typing.Any]
+PlatformMarketPlatform = typing.Union[
+    typing.Literal["KALSHI", "POLYMARKET", "PREDICT", "SXBET", "ALPHA-ARCADE"], typing.Any
+]

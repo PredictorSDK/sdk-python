@@ -9,12 +9,12 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class MarketDetailOutcome(UniversalBaseModel):
     name: str = pydantic.Field()
     """
-    Outcome label as the platform reports it. Kalshi binary markets normalize to `Yes`/`No`; Polymarket parses the stringified outcomes array (also typically `Yes`/`No`); Predict reports per-outcome names; SX Bet uses outcome-one/outcome-two names (e.g. team labels with spreads applied).
+    Outcome label as the platform reports it. Kalshi binary markets normalize to `Yes`/`No`; Polymarket parses the stringified outcomes array (also typically `Yes`/`No`); Predict reports per-outcome names; SX Bet uses outcome-one/outcome-two names (e.g. team labels with spreads applied); Hyperliquid uses the outcome `sideSpecs` names.
     """
 
     outcome_id: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Stable per-platform key for this outcome: Kalshi `yes`/`no`, Polymarket CLOB token id, Predict on-chain id, SX Bet `outcomeOne`/`outcomeTwo`. The join key for future per-outcome sub-resources (order-book depth).
+    Stable per-platform key for this outcome: Kalshi `yes`/`no`, Polymarket CLOB token id, Predict on-chain id, SX Bet `outcomeOne`/`outcomeTwo`, Hyperliquid coin encoding (`#<10*outcome+side>`). The join key for future per-outcome sub-resources (order-book depth).
     """
 
     price: typing.Optional[float] = pydantic.Field(default=None)
@@ -24,22 +24,22 @@ class MarketDetailOutcome(UniversalBaseModel):
 
     bid: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Best bid for this outcome in 0–1 probability. Null when that book side is empty or the platform doesn't publish per-outcome quotes on the record (Polymarket non-primary outcomes) — never synthesized from `1 − ask`.
+    Best bid for this outcome in 0–1 probability. Null when that book side is empty or the platform doesn't publish per-outcome quotes on the record (Polymarket non-primary outcomes). Hyperliquid's second side is derived from the merged book complement (`1 − first-side ask`), matching the platform's order-book structure; no other platform synthesizes bid from `1 − ask`.
     """
 
     ask: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Best ask (price to take this outcome) in 0–1 probability. For SX Bet this is derived from the opposite side's best maker quote (`1 − bid(other)`), which is that book's actual taker price.
+    Best ask (price to take this outcome) in 0–1 probability. For SX Bet this is derived from the opposite side's best maker quote (`1 − bid(other)`), which is that book's actual taker price. For Hyperliquid's second side this is derived from the merged book complement (`1 − first-side bid`).
     """
 
     last: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Last traded price for this outcome in 0–1 probability. Null where the platform exposes no last-trade on the record (Predict, SX Bet).
+    Last traded price for this outcome in 0–1 probability. Null where the platform exposes no last-trade on the record (Predict, SX Bet, Hyperliquid).
     """
 
     bid_size: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Resting size at the best bid in native contract/share units (NOT USD). Omitted where the platform publishes no per-side size — Kalshi publishes YES-side sizes only; Polymarket and SX Bet publish none on this path.
+    Resting size at the best bid in native contract/share units (NOT USD). Omitted where the platform publishes no per-side size — Kalshi publishes YES-side sizes only; Hyperliquid publishes top-of-book sizes from `l2Book`; Polymarket and SX Bet publish none on this path.
     """
 
     ask_size: typing.Optional[float] = pydantic.Field(default=None)

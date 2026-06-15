@@ -17,7 +17,7 @@ class MarketDetailPricing(UniversalBaseModel):
 
     availability: MarketDetailPricingAvailability = pydantic.Field()
     """
-    `live` — every outcome carries a price. `partial` — some but not all outcomes priced. `no_quotes` — the pricing fetch succeeded but the book is empty (SX Bet with no resting orders; Kalshi provisional/multivariate markets whose quotes are empty-book placeholders). `unavailable` — the pricing enrichment fetch failed or timed out (SX Bet); identity fields are still served.
+    `live` — every outcome carries a price. `partial` — some but not all outcomes priced. `no_quotes` — the pricing fetch succeeded but the book is empty (SX Bet or Hyperliquid with no resting orders; Kalshi provisional/multivariate markets whose quotes are empty-book placeholders). `unavailable` — the pricing enrichment fetch failed or timed out (SX Bet/Hyperliquid); identity fields are still served.
     """
 
     scale: MarketDetailPricingScale = pydantic.Field()
@@ -27,12 +27,12 @@ class MarketDetailPricing(UniversalBaseModel):
 
     source: MarketDetailPricingSource = pydantic.Field()
     """
-    Where the quotes came from. `market_record` — embedded in the same single-market record as the identity fetch (Kalshi, Polymarket, Predict). `orderbook` — required one bounded second fetch against the platform's order-book surface (SX Bet `/orders/odds/best`).
+    Where the quotes came from. `market_record` — embedded in the same single-market record as the identity fetch (Kalshi, Polymarket, Predict). `orderbook` — required one bounded second fetch against the platform's order-book surface (SX Bet `/orders/odds/best`, Hyperliquid `l2Book`).
     """
 
     as_of: typing.Optional[dt.datetime] = pydantic.Field(default=None)
     """
-    Quote freshness as RFC3339. When the two sides carry independent upstream timestamps (SX Bet), this is the OLDER of them — a conservative floor that never over-claims freshness. Null when the upstream record carries no quote timestamp at all (Predict) — treat freshness as UNKNOWN, not as fresh. Timestamps come from each platform's own clock; for Kalshi/Polymarket the value is the record's last-update time, the closest the platform exposes to a quote timestamp.
+    Quote freshness as RFC3339. When the two sides carry independent upstream timestamps (SX Bet), this is the OLDER of them — a conservative floor that never over-claims freshness. Hyperliquid uses the `l2Book` server timestamp. Null when the upstream record carries no quote timestamp at all (Predict) — treat freshness as UNKNOWN, not as fresh. Timestamps come from each platform's own clock; for Kalshi/Polymarket the value is the record's last-update time, the closest the platform exposes to a quote timestamp.
     """
 
     neg_risk: typing.Optional[bool] = pydantic.Field(default=None)

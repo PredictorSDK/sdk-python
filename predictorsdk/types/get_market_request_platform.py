@@ -2,4 +2,6 @@
 
 import typing
 
-GetMarketRequestPlatform = typing.Union[typing.Literal["kalshi", "polymarket", "predict", "sxbet"], typing.Any]
+GetMarketRequestPlatform = typing.Union[
+    typing.Literal["kalshi", "polymarket", "predict", "sxbet", "hyperliquid", "alpha-arcade"], typing.Any
+]
