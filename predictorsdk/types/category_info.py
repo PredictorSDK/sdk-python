@@ -5,26 +5,19 @@ import typing
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .market_category import MarketCategory
-from .unified_market_provider import UnifiedMarketProvider
 
 
-class UnifiedMarket(UniversalBaseModel):
-    id: str = pydantic.Field()
+class CategoryInfo(UniversalBaseModel):
+    id: MarketCategory
+    name: str = pydantic.Field()
     """
-    Composite market identifier in the format `{provider}:{provider_id}` (e.g. `kalshi:KXNBAGAME-26MAR06INDLAL-LAL`).
-    """
-
-    provider: UnifiedMarketProvider = pydantic.Field()
-    """
-    Prediction market provider.
+    Human-readable category label.
     """
 
-    title: str = pydantic.Field()
+    description: str = pydantic.Field()
     """
-    Human-readable market title/question.
+    Short description of the category's intended scope.
     """
-
-    category: MarketCategory
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

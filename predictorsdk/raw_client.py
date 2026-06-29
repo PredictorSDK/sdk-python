@@ -18,11 +18,13 @@ from .errors.payment_required_error import PaymentRequiredError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
 from .errors.unauthorized_error import UnauthorizedError
+from .types.categories_response import CategoriesResponse
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.error_response import ErrorResponse
 from .types.event_response import EventResponse
 from .types.get_event_request_platform import GetEventRequestPlatform
 from .types.get_market_request_platform import GetMarketRequestPlatform
+from .types.market_category import MarketCategory
 from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
 from .types.payment_required_error_body import PaymentRequiredErrorBody
@@ -186,6 +188,7 @@ class RawPredictorSDK:
         *,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
+        category: typing.Optional[MarketCategory] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[MarketsListResponse]:
         """
@@ -198,6 +201,9 @@ class RawPredictorSDK:
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        category : typing.Optional[MarketCategory]
+            Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -213,6 +219,7 @@ class RawPredictorSDK:
             params={
                 "limit": limit,
                 "cursor": cursor,
+                "category": category,
             },
             request_options=request_options,
         )
@@ -283,6 +290,90 @@ class RawPredictorSDK:
                 )
             if _response.status_code == 503:
                 raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_categories(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[CategoriesResponse]:
+        """
+        Returns the canonical top-level categories that can be used to filter unified market discovery with `GET /v1/markets?category=...`. Categories are PredictorSDK-normalized buckets, not provider-native tags. Sports is one category among many; sport/league facets may be added later as deeper filters without changing this top-level list.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[CategoriesResponse]
+            Supported category list
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/categories",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CategoriesResponse,
+                    parse_obj_as(
+                        type_=CategoriesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -1198,6 +1289,7 @@ class AsyncRawPredictorSDK:
         *,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
+        category: typing.Optional[MarketCategory] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[MarketsListResponse]:
         """
@@ -1210,6 +1302,9 @@ class AsyncRawPredictorSDK:
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        category : typing.Optional[MarketCategory]
+            Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1225,6 +1320,7 @@ class AsyncRawPredictorSDK:
             params={
                 "limit": limit,
                 "cursor": cursor,
+                "category": category,
             },
             request_options=request_options,
         )
@@ -1295,6 +1391,90 @@ class AsyncRawPredictorSDK:
                 )
             if _response.status_code == 503:
                 raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_categories(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[CategoriesResponse]:
+        """
+        Returns the canonical top-level categories that can be used to filter unified market discovery with `GET /v1/markets?category=...`. Categories are PredictorSDK-normalized buckets, not provider-native tags. Sports is one category among many; sport/league facets may be added later as deeper filters without changing this top-level list.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[CategoriesResponse]
+            Supported category list
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/categories",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CategoriesResponse,
+                    parse_obj_as(
+                        type_=CategoriesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        PaymentRequiredErrorBody,
+                        parse_obj_as(
+                            type_=PaymentRequiredErrorBody,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,

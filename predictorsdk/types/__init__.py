@@ -6,6 +6,8 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .categories_response import CategoriesResponse
+    from .category_info import CategoryInfo
     from .crypto_price_item import CryptoPriceItem
     from .crypto_prices_response import CryptoPricesResponse
     from .error_response import ErrorResponse
@@ -15,6 +17,7 @@ if typing.TYPE_CHECKING:
     from .event_response_platform import EventResponsePlatform
     from .get_event_request_platform import GetEventRequestPlatform
     from .get_market_request_platform import GetMarketRequestPlatform
+    from .market_category import MarketCategory
     from .market_detail_outcome import MarketDetailOutcome
     from .market_detail_pricing import MarketDetailPricing
     from .market_detail_pricing_availability import MarketDetailPricingAvailability
@@ -36,6 +39,8 @@ if typing.TYPE_CHECKING:
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
 _dynamic_imports: typing.Dict[str, str] = {
+    "CategoriesResponse": ".categories_response",
+    "CategoryInfo": ".category_info",
     "CryptoPriceItem": ".crypto_price_item",
     "CryptoPricesResponse": ".crypto_prices_response",
     "ErrorResponse": ".error_response",
@@ -45,6 +50,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "EventResponsePlatform": ".event_response_platform",
     "GetEventRequestPlatform": ".get_event_request_platform",
     "GetMarketRequestPlatform": ".get_market_request_platform",
+    "MarketCategory": ".market_category",
     "MarketDetailOutcome": ".market_detail_outcome",
     "MarketDetailPricing": ".market_detail_pricing",
     "MarketDetailPricingAvailability": ".market_detail_pricing_availability",
@@ -90,6 +96,8 @@ def __dir__():
 
 
 __all__ = [
+    "CategoriesResponse",
+    "CategoryInfo",
     "CryptoPriceItem",
     "CryptoPricesResponse",
     "ErrorResponse",
@@ -99,6 +107,7 @@ __all__ = [
     "EventResponsePlatform",
     "GetEventRequestPlatform",
     "GetMarketRequestPlatform",
+    "MarketCategory",
     "MarketDetailOutcome",
     "MarketDetailPricing",
     "MarketDetailPricingAvailability",

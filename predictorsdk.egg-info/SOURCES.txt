@@ -44,6 +44,8 @@ predictorsdk/errors/unauthorized_error.py
 predictorsdk/tests/conftest.py
 predictorsdk/tests/test_aiohttp_autodetect.py
 predictorsdk/types/__init__.py
+predictorsdk/types/categories_response.py
+predictorsdk/types/category_info.py
 predictorsdk/types/crypto_price_item.py
 predictorsdk/types/crypto_prices_response.py
 predictorsdk/types/error_response.py
@@ -53,6 +55,7 @@ predictorsdk/types/event_response.py
 predictorsdk/types/event_response_platform.py
 predictorsdk/types/get_event_request_platform.py
 predictorsdk/types/get_market_request_platform.py
+predictorsdk/types/market_category.py
 predictorsdk/types/market_detail_outcome.py
 predictorsdk/types/market_detail_pricing.py
 predictorsdk/types/market_detail_pricing_availability.py

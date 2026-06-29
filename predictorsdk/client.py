@@ -8,10 +8,12 @@ from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .environment import PredictorSDKEnvironment
 from .raw_client import AsyncRawPredictorSDK, RawPredictorSDK
+from .types.categories_response import CategoriesResponse
 from .types.crypto_prices_response import CryptoPricesResponse
 from .types.event_response import EventResponse
 from .types.get_event_request_platform import GetEventRequestPlatform
 from .types.get_market_request_platform import GetMarketRequestPlatform
+from .types.market_category import MarketCategory
 from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
 from .types.polymarket_positions_response import PolymarketPositionsResponse
@@ -174,6 +176,7 @@ class PredictorSDK:
         *,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
+        category: typing.Optional[MarketCategory] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketsListResponse:
         """
@@ -186,6 +189,9 @@ class PredictorSDK:
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        category : typing.Optional[MarketCategory]
+            Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -204,7 +210,35 @@ class PredictorSDK:
         )
         client.get_markets()
         """
-        _response = self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
+        _response = self._raw_client.get_markets(
+            limit=limit, cursor=cursor, category=category, request_options=request_options
+        )
+        return _response.data
+
+    def get_categories(self, *, request_options: typing.Optional[RequestOptions] = None) -> CategoriesResponse:
+        """
+        Returns the canonical top-level categories that can be used to filter unified market discovery with `GET /v1/markets?category=...`. Categories are PredictorSDK-normalized buckets, not provider-native tags. Sports is one category among many; sport/league facets may be added later as deeper filters without changing this top-level list.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CategoriesResponse
+            Supported category list
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_categories()
+        """
+        _response = self._raw_client.get_categories(request_options=request_options)
         return _response.data
 
     def get_market(
@@ -643,6 +677,7 @@ class AsyncPredictorSDK:
         *,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
+        category: typing.Optional[MarketCategory] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketsListResponse:
         """
@@ -655,6 +690,9 @@ class AsyncPredictorSDK:
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`).
+
+        category : typing.Optional[MarketCategory]
+            Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -681,7 +719,43 @@ class AsyncPredictorSDK:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_markets(limit=limit, cursor=cursor, request_options=request_options)
+        _response = await self._raw_client.get_markets(
+            limit=limit, cursor=cursor, category=category, request_options=request_options
+        )
+        return _response.data
+
+    async def get_categories(self, *, request_options: typing.Optional[RequestOptions] = None) -> CategoriesResponse:
+        """
+        Returns the canonical top-level categories that can be used to filter unified market discovery with `GET /v1/markets?category=...`. Categories are PredictorSDK-normalized buckets, not provider-native tags. Sports is one category among many; sport/league facets may be added later as deeper filters without changing this top-level list.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CategoriesResponse
+            Supported category list
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_categories()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_categories(request_options=request_options)
         return _response.data
 
     async def get_market(
