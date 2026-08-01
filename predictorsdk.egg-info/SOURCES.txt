@@ -44,6 +44,15 @@ predictorsdk/errors/unauthorized_error.py
 predictorsdk/tests/conftest.py
 predictorsdk/tests/test_aiohttp_autodetect.py
 predictorsdk/types/__init__.py
+predictorsdk/types/canonical_sports_event.py
+predictorsdk/types/canonical_sports_outcome.py
+predictorsdk/types/canonical_sports_participant.py
+predictorsdk/types/canonical_sports_rules.py
+predictorsdk/types/canonical_sports_source_market.py
+predictorsdk/types/canonical_sports_source_market_provider.py
+predictorsdk/types/canonical_sports_source_outcome.py
+predictorsdk/types/canonical_sports_subject.py
+predictorsdk/types/canonical_sports_submarket.py
 predictorsdk/types/categories_response.py
 predictorsdk/types/category_info.py
 predictorsdk/types/crypto_price_item.py

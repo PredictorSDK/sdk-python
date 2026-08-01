@@ -6,6 +6,15 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .canonical_sports_event import CanonicalSportsEvent
+    from .canonical_sports_outcome import CanonicalSportsOutcome
+    from .canonical_sports_participant import CanonicalSportsParticipant
+    from .canonical_sports_rules import CanonicalSportsRules
+    from .canonical_sports_source_market import CanonicalSportsSourceMarket
+    from .canonical_sports_source_market_provider import CanonicalSportsSourceMarketProvider
+    from .canonical_sports_source_outcome import CanonicalSportsSourceOutcome
+    from .canonical_sports_subject import CanonicalSportsSubject
+    from .canonical_sports_submarket import CanonicalSportsSubmarket
     from .categories_response import CategoriesResponse
     from .category_info import CategoryInfo
     from .crypto_price_item import CryptoPriceItem
@@ -39,6 +48,15 @@ if typing.TYPE_CHECKING:
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
 _dynamic_imports: typing.Dict[str, str] = {
+    "CanonicalSportsEvent": ".canonical_sports_event",
+    "CanonicalSportsOutcome": ".canonical_sports_outcome",
+    "CanonicalSportsParticipant": ".canonical_sports_participant",
+    "CanonicalSportsRules": ".canonical_sports_rules",
+    "CanonicalSportsSourceMarket": ".canonical_sports_source_market",
+    "CanonicalSportsSourceMarketProvider": ".canonical_sports_source_market_provider",
+    "CanonicalSportsSourceOutcome": ".canonical_sports_source_outcome",
+    "CanonicalSportsSubject": ".canonical_sports_subject",
+    "CanonicalSportsSubmarket": ".canonical_sports_submarket",
     "CategoriesResponse": ".categories_response",
     "CategoryInfo": ".category_info",
     "CryptoPriceItem": ".crypto_price_item",
@@ -96,6 +114,15 @@ def __dir__():
 
 
 __all__ = [
+    "CanonicalSportsEvent",
+    "CanonicalSportsOutcome",
+    "CanonicalSportsParticipant",
+    "CanonicalSportsRules",
+    "CanonicalSportsSourceMarket",
+    "CanonicalSportsSourceMarketProvider",
+    "CanonicalSportsSourceOutcome",
+    "CanonicalSportsSubject",
+    "CanonicalSportsSubmarket",
     "CategoriesResponse",
     "CategoryInfo",
     "CryptoPriceItem",

@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .canonical_sports_event import CanonicalSportsEvent
 from .pagination_block import PaginationBlock
 from .platform_market import PlatformMarket
 
@@ -12,6 +13,11 @@ class SportsMatchingResponse(UniversalBaseModel):
     markets: typing.Dict[str, typing.List[PlatformMarket]] = pydantic.Field()
     """
     Key-value pairs where each key is the queried identifier (Kalshi event ticker, Polymarket slug, or canonical event ID when no filter is provided) and each value is an array of platform market objects.
+    """
+
+    canonical_events: typing.Optional[typing.Dict[str, CanonicalSportsEvent]] = pydantic.Field(default=None)
+    """
+    Opt-in canonical identity map, present only when `include_submarkets=true`. Keys match the `markets` response keys; each value contains the canonical event ID and every normalized submarket/source mapping for that event.
     """
 
     pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)
