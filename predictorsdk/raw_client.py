@@ -28,6 +28,7 @@ from .types.market_category import MarketCategory
 from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
 from .types.payment_required_error_body import PaymentRequiredErrorBody
+from .types.plans_response import PlansResponse
 from .types.polymarket_positions_response import PolymarketPositionsResponse
 from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
@@ -37,6 +38,55 @@ from pydantic import ValidationError
 class RawPredictorSDK:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
+
+    def get_plans(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[PlansResponse]:
+        """
+        Returns the machine-readable public billing catalog used by API consumers and pricing surfaces. This endpoint is intentionally unauthenticated. Stripe price IDs and all other provisioning secrets are excluded from the response.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[PlansResponse]
+            Public plan catalog
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v1/plans",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PlansResponse,
+                    parse_obj_as(
+                        type_=PlansResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_sports_matching_markets(
         self,
@@ -1148,6 +1198,57 @@ class RawPredictorSDK:
 class AsyncRawPredictorSDK:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
+
+    async def get_plans(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[PlansResponse]:
+        """
+        Returns the machine-readable public billing catalog used by API consumers and pricing surfaces. This endpoint is intentionally unauthenticated. Stripe price IDs and all other provisioning secrets are excluded from the response.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[PlansResponse]
+            Public plan catalog
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v1/plans",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    PlansResponse,
+                    parse_obj_as(
+                        type_=PlansResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_sports_matching_markets(
         self,

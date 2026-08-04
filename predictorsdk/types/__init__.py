@@ -39,6 +39,8 @@ if typing.TYPE_CHECKING:
     from .pagination_block import PaginationBlock
     from .payment_required_error_action import PaymentRequiredErrorAction
     from .payment_required_error_body import PaymentRequiredErrorBody
+    from .plan import Plan
+    from .plans_response import PlansResponse
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
     from .polymarket_position import PolymarketPosition
@@ -81,6 +83,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PaginationBlock": ".pagination_block",
     "PaymentRequiredErrorAction": ".payment_required_error_action",
     "PaymentRequiredErrorBody": ".payment_required_error_body",
+    "Plan": ".plan",
+    "PlansResponse": ".plans_response",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
     "PolymarketPosition": ".polymarket_position",
@@ -147,6 +151,8 @@ __all__ = [
     "PaginationBlock",
     "PaymentRequiredErrorAction",
     "PaymentRequiredErrorBody",
+    "Plan",
+    "PlansResponse",
     "PlatformMarket",
     "PlatformMarketPlatform",
     "PolymarketPosition",

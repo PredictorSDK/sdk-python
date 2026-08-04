@@ -16,6 +16,7 @@ from .types.get_market_request_platform import GetMarketRequestPlatform
 from .types.market_category import MarketCategory
 from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
+from .types.plans_response import PlansResponse
 from .types.polymarket_positions_response import PolymarketPositionsResponse
 from .types.polymarket_wallet_response import PolymarketWalletResponse
 from .types.sports_matching_response import SportsMatchingResponse
@@ -39,7 +40,7 @@ class PredictorSDK:
 
 
 
-    token : typing.Union[str, typing.Callable[[], str]]
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -69,7 +70,7 @@ class PredictorSDK:
         *,
         base_url: typing.Optional[str] = None,
         environment: PredictorSDKEnvironment = PredictorSDKEnvironment.PRODUCTION,
-        token: typing.Union[str, typing.Callable[[], str]],
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
@@ -103,6 +104,32 @@ class PredictorSDK:
         RawPredictorSDK
         """
         return self._raw_client
+
+    def get_plans(self, *, request_options: typing.Optional[RequestOptions] = None) -> PlansResponse:
+        """
+        Returns the machine-readable public billing catalog used by API consumers and pricing surfaces. This endpoint is intentionally unauthenticated. Stripe price IDs and all other provisioning secrets are excluded from the response.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PlansResponse
+            Public plan catalog
+
+        Examples
+        --------
+        from predictorsdk import PredictorSDK
+
+        client = PredictorSDK(
+            token="YOUR_TOKEN",
+        )
+        client.get_plans()
+        """
+        _response = self._raw_client.get_plans(request_options=request_options)
+        return _response.data
 
     def get_sports_matching_markets(
         self,
@@ -539,7 +566,7 @@ class AsyncPredictorSDK:
 
 
 
-    token : typing.Union[str, typing.Callable[[], str]]
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -572,7 +599,7 @@ class AsyncPredictorSDK:
         *,
         base_url: typing.Optional[str] = None,
         environment: PredictorSDKEnvironment = PredictorSDKEnvironment.PRODUCTION,
-        token: typing.Union[str, typing.Callable[[], str]],
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -606,6 +633,40 @@ class AsyncPredictorSDK:
         AsyncRawPredictorSDK
         """
         return self._raw_client
+
+    async def get_plans(self, *, request_options: typing.Optional[RequestOptions] = None) -> PlansResponse:
+        """
+        Returns the machine-readable public billing catalog used by API consumers and pricing surfaces. This endpoint is intentionally unauthenticated. Stripe price IDs and all other provisioning secrets are excluded from the response.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PlansResponse
+            Public plan catalog
+
+        Examples
+        --------
+        import asyncio
+
+        from predictorsdk import AsyncPredictorSDK
+
+        client = AsyncPredictorSDK(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.get_plans()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_plans(request_options=request_options)
+        return _response.data
 
     async def get_sports_matching_markets(
         self,

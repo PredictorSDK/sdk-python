@@ -78,7 +78,7 @@ def _add_symmetric_jitter(delay: float) -> float:
 
 def _parse_x_ratelimit_reset(response_headers: httpx.Headers) -> typing.Optional[float]:
     """
-    Parse the X-RateLimit-Reset header (Unix timestamp in seconds).
+    Parse X-RateLimit-Reset as Unix seconds, accepting legacy millisecond epochs.
     Returns seconds to wait, or None if header is missing/invalid.
     """
     reset_time_str = response_headers.get("x-ratelimit-reset")
@@ -87,7 +87,8 @@ def _parse_x_ratelimit_reset(response_headers: httpx.Headers) -> typing.Optional
 
     try:
         reset_time = int(reset_time_str)
-        delay = reset_time - time.time()
+        reset_time_seconds = reset_time / 1000 if reset_time >= 1_000_000_000_000 else reset_time
+        delay = reset_time_seconds - time.time()
         if delay > 0:
             return delay
     except (ValueError, TypeError):
