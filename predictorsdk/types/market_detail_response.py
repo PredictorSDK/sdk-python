@@ -61,6 +61,10 @@ class MarketDetailResponse(UniversalBaseModel):
             description="Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record).",
         ),
     ] = None
+    """
+    Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record).
+    """
+
     volume_total_usd: typing.Optional[float] = pydantic.Field(default=None)
     """
     Lifetime traded volume in USD notional. Same per-platform availability as `volume_24h_usd`. Never fabricated by converting contract counts through a price.
@@ -74,6 +78,10 @@ class MarketDetailResponse(UniversalBaseModel):
             description="Trailing-24h traded volume in contracts (Kalshi `volume_24h_fp`; fractional contracts supported). Omitted for platforms that denominate volume in USD.",
         ),
     ] = None
+    """
+    Trailing-24h traded volume in contracts (Kalshi `volume_24h_fp`; fractional contracts supported). Omitted for platforms that denominate volume in USD.
+    """
+
     volume_total_contracts: typing.Optional[float] = pydantic.Field(default=None)
     """
     Lifetime traded volume in contracts (Kalshi `volume_fp`). Omitted for platforms that denominate volume in USD.

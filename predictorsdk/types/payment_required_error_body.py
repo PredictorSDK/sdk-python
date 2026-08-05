@@ -19,11 +19,7 @@ class PaymentRequiredErrorBody(UniversalBaseModel):
     """
 
     status_code: int
-    action: PaymentRequiredErrorAction = pydantic.Field()
-    """
-    Recommended client action for this 402.
-    """
-
+    action: PaymentRequiredErrorAction
     required_tier: str = pydantic.Field()
     """
     Billing tier that would satisfy the gate (e.g. `starter`, `pro`, `business`, `enterprise`).

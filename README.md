@@ -1,6 +1,6 @@
 # predictorsdk
 
-The official Python client for the [PredictorSDK](https://predictorsdk.com) matching markets API.
+The official Python client for the [PredictorSDK](https://predictorsdk.com) prediction-market data API.
 
 ## Installation
 
@@ -15,9 +15,11 @@ from predictorsdk import PredictorSDK
 
 client = PredictorSDK(token="your-api-key")
 
-response = client.get_sports_matching_markets(
-    kalshi_event_ticker="KXMLB-25-NYM-COL-2025-04-03",
-)
+plans = client.get_plans()
+categories = client.get_categories()
+markets = client.get_markets(limit=10, category="sports")
+
+print(plans.data, categories.data, markets.data)
 ```
 
 ## Documentation
