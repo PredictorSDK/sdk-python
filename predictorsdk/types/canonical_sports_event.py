@@ -14,8 +14,16 @@ class CanonicalSportsEvent(UniversalBaseModel):
     Stable canonical event key.
     """
 
-    sport: typing.Optional[str] = None
-    league: typing.Optional[str] = None
+    sport: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Canonical sport slug. `basketball`, `hockey`, or `baseball` today.
+    """
+
+    league: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Canonical league slug. Cross-platform matching covers `nba`, `wnba`, `nhl`, and `mlb` today. The value is the first segment of `event_id`, so `wnba-tor-wsh-2026-08-19` is a WNBA game. Treat this as an open set — leagues are added without a breaking change.
+    """
+
     title: str
     participants: typing.Optional[typing.List[CanonicalSportsParticipant]] = None
     submarkets: typing.List[CanonicalSportsSubmarket]
