@@ -10,11 +10,12 @@ from .market_detail_outcome import MarketDetailOutcome
 from .market_detail_pricing import MarketDetailPricing
 from .market_detail_response_provider import MarketDetailResponseProvider
 from .market_detail_response_status import MarketDetailResponseStatus
+from .market_detail_trading_fees import MarketDetailTradingFees
 
 
 class MarketDetailResponse(UniversalBaseModel):
     """
-    Single-market detail across all six supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
+    Single-market detail across all six supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. The trading_fees tier applies the same rule to the venue's own published fee parameters. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
     """
 
     id: str = pydantic.Field()
@@ -48,6 +49,7 @@ class MarketDetailResponse(UniversalBaseModel):
     """
 
     pricing: MarketDetailPricing
+    trading_fees: MarketDetailTradingFees
     liquidity_usd: typing.Optional[float] = pydantic.Field(default=None)
     """
     Resting order-book depth valued in USD — strictly CLOB book depth, never an AMM pool size or a synthetic score. Polymarket exposes it natively (`liquidityNum`); null for Kalshi (its upstream `liquidity_dollars` is deprecated and always zero), Predict (stats is null on the record), and SX Bet/Hyperliquid (no scalar without summing the raw order book).

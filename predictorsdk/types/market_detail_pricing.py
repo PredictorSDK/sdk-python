@@ -27,12 +27,13 @@ class MarketDetailPricing(UniversalBaseModel):
 
     source: MarketDetailPricingSource = pydantic.Field()
     """
-    Where the quotes came from. `market_record` — embedded in the same single-market record as the identity fetch (Kalshi, Polymarket, Predict). `orderbook` — required one bounded second fetch against the platform's order-book surface (SX Bet `/orders/odds/best`, Hyperliquid `l2Book`).
+    Where the quotes came from. `market_record` — embedded in the same single-market record as the identity fetch (Kalshi, Polymarket, Predict). `orderbook` — required one bounded second fetch against the platform's order-book surface (SX Bet `/orderbook-v3/snapshot`, Hyperliquid `l2Book`).
     """
 
     as_of: typing.Optional[dt.datetime] = pydantic.Field(default=None)
     """
-    Quote freshness as RFC3339. When the two sides carry independent upstream timestamps (SX Bet), this is the OLDER of them — a conservative floor that never over-claims freshness. Hyperliquid uses the `l2Book` server timestamp. Null when the upstream record carries no quote timestamp at all (Predict) — treat freshness as UNKNOWN, not as fresh. Timestamps come from each platform's own clock; for Kalshi/Polymarket the value is the record's last-update time, the closest the platform exposes to a quote timestamp.
+    Quote freshness as RFC3339. When the two sides carry independent upstream timestamps, this is the OLDER of them — a conservative floor that never over-claims freshness. Hyperliquid uses the `l2Book` server timestamp. Null when the upstream record carries no quote timestamp at all (Predict, AlphaArcade, and SX Bet) — treat freshness as UNKNOWN, not as fresh. Timestamps come from each platform's own clock; for Kalshi/Polymarket the value is the record's last-update time, the closest the platform exposes to a quote timestamp.
+    SX Bet moved from timestamped to null at its V3 order-book cutover (2026-08-25): V3 publishes an opaque monotonic book `version` and no wall-clock stamp anywhere, and server ingest time is not substituted because it would masquerade as an upstream stamp.
     """
 
     neg_risk: typing.Optional[bool] = pydantic.Field(default=None)

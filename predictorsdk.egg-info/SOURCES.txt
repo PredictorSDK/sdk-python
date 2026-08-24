@@ -65,6 +65,10 @@ predictorsdk/types/event_response_platform.py
 predictorsdk/types/get_event_request_platform.py
 predictorsdk/types/get_market_request_platform.py
 predictorsdk/types/market_category.py
+predictorsdk/types/market_detail_fee_leg.py
+predictorsdk/types/market_detail_fee_leg_model.py
+predictorsdk/types/market_detail_fee_rounding.py
+predictorsdk/types/market_detail_fee_rounding_direction.py
 predictorsdk/types/market_detail_outcome.py
 predictorsdk/types/market_detail_pricing.py
 predictorsdk/types/market_detail_pricing_availability.py
@@ -73,6 +77,11 @@ predictorsdk/types/market_detail_pricing_source.py
 predictorsdk/types/market_detail_response.py
 predictorsdk/types/market_detail_response_provider.py
 predictorsdk/types/market_detail_response_status.py
+predictorsdk/types/market_detail_scheduled_fee_change.py
+predictorsdk/types/market_detail_trading_fees.py
+predictorsdk/types/market_detail_trading_fees_availability.py
+predictorsdk/types/market_detail_trading_fees_charge_basis.py
+predictorsdk/types/market_detail_trading_fees_source.py
 predictorsdk/types/markets_list_response.py
 predictorsdk/types/pagination_block.py
 predictorsdk/types/payment_required_error_action.py

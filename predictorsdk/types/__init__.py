@@ -27,6 +27,10 @@ if typing.TYPE_CHECKING:
     from .get_event_request_platform import GetEventRequestPlatform
     from .get_market_request_platform import GetMarketRequestPlatform
     from .market_category import MarketCategory
+    from .market_detail_fee_leg import MarketDetailFeeLeg
+    from .market_detail_fee_leg_model import MarketDetailFeeLegModel
+    from .market_detail_fee_rounding import MarketDetailFeeRounding
+    from .market_detail_fee_rounding_direction import MarketDetailFeeRoundingDirection
     from .market_detail_outcome import MarketDetailOutcome
     from .market_detail_pricing import MarketDetailPricing
     from .market_detail_pricing_availability import MarketDetailPricingAvailability
@@ -35,6 +39,11 @@ if typing.TYPE_CHECKING:
     from .market_detail_response import MarketDetailResponse
     from .market_detail_response_provider import MarketDetailResponseProvider
     from .market_detail_response_status import MarketDetailResponseStatus
+    from .market_detail_scheduled_fee_change import MarketDetailScheduledFeeChange
+    from .market_detail_trading_fees import MarketDetailTradingFees
+    from .market_detail_trading_fees_availability import MarketDetailTradingFeesAvailability
+    from .market_detail_trading_fees_charge_basis import MarketDetailTradingFeesChargeBasis
+    from .market_detail_trading_fees_source import MarketDetailTradingFeesSource
     from .markets_list_response import MarketsListResponse
     from .pagination_block import PaginationBlock
     from .payment_required_error_action import PaymentRequiredErrorAction
@@ -71,6 +80,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetEventRequestPlatform": ".get_event_request_platform",
     "GetMarketRequestPlatform": ".get_market_request_platform",
     "MarketCategory": ".market_category",
+    "MarketDetailFeeLeg": ".market_detail_fee_leg",
+    "MarketDetailFeeLegModel": ".market_detail_fee_leg_model",
+    "MarketDetailFeeRounding": ".market_detail_fee_rounding",
+    "MarketDetailFeeRoundingDirection": ".market_detail_fee_rounding_direction",
     "MarketDetailOutcome": ".market_detail_outcome",
     "MarketDetailPricing": ".market_detail_pricing",
     "MarketDetailPricingAvailability": ".market_detail_pricing_availability",
@@ -79,6 +92,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MarketDetailResponse": ".market_detail_response",
     "MarketDetailResponseProvider": ".market_detail_response_provider",
     "MarketDetailResponseStatus": ".market_detail_response_status",
+    "MarketDetailScheduledFeeChange": ".market_detail_scheduled_fee_change",
+    "MarketDetailTradingFees": ".market_detail_trading_fees",
+    "MarketDetailTradingFeesAvailability": ".market_detail_trading_fees_availability",
+    "MarketDetailTradingFeesChargeBasis": ".market_detail_trading_fees_charge_basis",
+    "MarketDetailTradingFeesSource": ".market_detail_trading_fees_source",
     "MarketsListResponse": ".markets_list_response",
     "PaginationBlock": ".pagination_block",
     "PaymentRequiredErrorAction": ".payment_required_error_action",
@@ -139,6 +157,10 @@ __all__ = [
     "GetEventRequestPlatform",
     "GetMarketRequestPlatform",
     "MarketCategory",
+    "MarketDetailFeeLeg",
+    "MarketDetailFeeLegModel",
+    "MarketDetailFeeRounding",
+    "MarketDetailFeeRoundingDirection",
     "MarketDetailOutcome",
     "MarketDetailPricing",
     "MarketDetailPricingAvailability",
@@ -147,6 +169,11 @@ __all__ = [
     "MarketDetailResponse",
     "MarketDetailResponseProvider",
     "MarketDetailResponseStatus",
+    "MarketDetailScheduledFeeChange",
+    "MarketDetailTradingFees",
+    "MarketDetailTradingFeesAvailability",
+    "MarketDetailTradingFeesChargeBasis",
+    "MarketDetailTradingFeesSource",
     "MarketsListResponse",
     "PaginationBlock",
     "PaymentRequiredErrorAction",
