@@ -3,5 +3,5 @@
 import typing
 
 MarketDetailPricingAvailability = typing.Union[
-    typing.Literal["live", "partial", "no_quotes", "unavailable"], typing.Any
+    typing.Literal["live", "indicative", "partial", "no_quotes", "unavailable"], typing.Any
 ]

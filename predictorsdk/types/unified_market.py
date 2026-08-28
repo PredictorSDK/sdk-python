@@ -11,7 +11,7 @@ from .unified_market_provider import UnifiedMarketProvider
 class UnifiedMarket(UniversalBaseModel):
     id: str = pydantic.Field()
     """
-    Composite market identifier in the format `{provider}:{provider_id}` (e.g. `kalshi:KXNBAGAME-26MAR06INDLAL-LAL`).
+    Composite market identifier in the format `{provider}:{provider_id}` (e.g. `kalshi:AMAZONFTC-29DEC31`).
     """
 
     provider: UnifiedMarketProvider = pydantic.Field()

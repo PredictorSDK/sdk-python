@@ -6,6 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .ambiguous_identifier_error import AmbiguousIdentifierError
     from .canonical_sports_event import CanonicalSportsEvent
     from .canonical_sports_outcome import CanonicalSportsOutcome
     from .canonical_sports_participant import CanonicalSportsParticipant
@@ -26,6 +27,7 @@ if typing.TYPE_CHECKING:
     from .event_response_platform import EventResponsePlatform
     from .get_event_request_platform import GetEventRequestPlatform
     from .get_market_request_platform import GetMarketRequestPlatform
+    from .get_markets_request_provider import GetMarketsRequestProvider
     from .market_category import MarketCategory
     from .market_detail_fee_leg import MarketDetailFeeLeg
     from .market_detail_fee_leg_model import MarketDetailFeeLegModel
@@ -33,6 +35,7 @@ if typing.TYPE_CHECKING:
     from .market_detail_fee_rounding_direction import MarketDetailFeeRoundingDirection
     from .market_detail_outcome import MarketDetailOutcome
     from .market_detail_pricing import MarketDetailPricing
+    from .market_detail_pricing_as_of_kind import MarketDetailPricingAsOfKind
     from .market_detail_pricing_availability import MarketDetailPricingAvailability
     from .market_detail_pricing_scale import MarketDetailPricingScale
     from .market_detail_pricing_source import MarketDetailPricingSource
@@ -45,6 +48,7 @@ if typing.TYPE_CHECKING:
     from .market_detail_trading_fees_charge_basis import MarketDetailTradingFeesChargeBasis
     from .market_detail_trading_fees_source import MarketDetailTradingFeesSource
     from .markets_list_response import MarketsListResponse
+    from .markets_snapshot import MarketsSnapshot
     from .pagination_block import PaginationBlock
     from .payment_required_error_action import PaymentRequiredErrorAction
     from .payment_required_error_body import PaymentRequiredErrorBody
@@ -59,6 +63,7 @@ if typing.TYPE_CHECKING:
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
 _dynamic_imports: typing.Dict[str, str] = {
+    "AmbiguousIdentifierError": ".ambiguous_identifier_error",
     "CanonicalSportsEvent": ".canonical_sports_event",
     "CanonicalSportsOutcome": ".canonical_sports_outcome",
     "CanonicalSportsParticipant": ".canonical_sports_participant",
@@ -79,6 +84,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "EventResponsePlatform": ".event_response_platform",
     "GetEventRequestPlatform": ".get_event_request_platform",
     "GetMarketRequestPlatform": ".get_market_request_platform",
+    "GetMarketsRequestProvider": ".get_markets_request_provider",
     "MarketCategory": ".market_category",
     "MarketDetailFeeLeg": ".market_detail_fee_leg",
     "MarketDetailFeeLegModel": ".market_detail_fee_leg_model",
@@ -86,6 +92,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MarketDetailFeeRoundingDirection": ".market_detail_fee_rounding_direction",
     "MarketDetailOutcome": ".market_detail_outcome",
     "MarketDetailPricing": ".market_detail_pricing",
+    "MarketDetailPricingAsOfKind": ".market_detail_pricing_as_of_kind",
     "MarketDetailPricingAvailability": ".market_detail_pricing_availability",
     "MarketDetailPricingScale": ".market_detail_pricing_scale",
     "MarketDetailPricingSource": ".market_detail_pricing_source",
@@ -98,6 +105,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MarketDetailTradingFeesChargeBasis": ".market_detail_trading_fees_charge_basis",
     "MarketDetailTradingFeesSource": ".market_detail_trading_fees_source",
     "MarketsListResponse": ".markets_list_response",
+    "MarketsSnapshot": ".markets_snapshot",
     "PaginationBlock": ".pagination_block",
     "PaymentRequiredErrorAction": ".payment_required_error_action",
     "PaymentRequiredErrorBody": ".payment_required_error_body",
@@ -136,6 +144,7 @@ def __dir__():
 
 
 __all__ = [
+    "AmbiguousIdentifierError",
     "CanonicalSportsEvent",
     "CanonicalSportsOutcome",
     "CanonicalSportsParticipant",
@@ -156,6 +165,7 @@ __all__ = [
     "EventResponsePlatform",
     "GetEventRequestPlatform",
     "GetMarketRequestPlatform",
+    "GetMarketsRequestProvider",
     "MarketCategory",
     "MarketDetailFeeLeg",
     "MarketDetailFeeLegModel",
@@ -163,6 +173,7 @@ __all__ = [
     "MarketDetailFeeRoundingDirection",
     "MarketDetailOutcome",
     "MarketDetailPricing",
+    "MarketDetailPricingAsOfKind",
     "MarketDetailPricingAvailability",
     "MarketDetailPricingScale",
     "MarketDetailPricingSource",
@@ -175,6 +186,7 @@ __all__ = [
     "MarketDetailTradingFeesChargeBasis",
     "MarketDetailTradingFeesSource",
     "MarketsListResponse",
+    "MarketsSnapshot",
     "PaginationBlock",
     "PaymentRequiredErrorAction",
     "PaymentRequiredErrorBody",

@@ -21,7 +21,7 @@ class CanonicalSportsEvent(UniversalBaseModel):
 
     league: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Canonical league slug. Cross-platform matching covers `nba`, `wnba`, `nhl`, and `mlb` today. The value is the first segment of `event_id`, so `wnba-tor-wsh-2026-08-19` is a WNBA game. Treat this as an open set — leagues are added without a breaking change.
+    Canonical league slug. Cross-platform matching covers `nba`, `wnba`, `nhl`, and `mlb` today. The value is the first segment of `event_id`, so `nba-okc-sas-2026-10-20` is an NBA game. Treat this as an open set — leagues are added without a breaking change.
     """
 
     title: str

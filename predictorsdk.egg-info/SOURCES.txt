@@ -35,6 +35,7 @@ predictorsdk/core/http_sse/_models.py
 predictorsdk/errors/__init__.py
 predictorsdk/errors/bad_gateway_error.py
 predictorsdk/errors/bad_request_error.py
+predictorsdk/errors/conflict_error.py
 predictorsdk/errors/forbidden_error.py
 predictorsdk/errors/not_found_error.py
 predictorsdk/errors/payment_required_error.py
@@ -44,6 +45,7 @@ predictorsdk/errors/unauthorized_error.py
 predictorsdk/tests/conftest.py
 predictorsdk/tests/test_aiohttp_autodetect.py
 predictorsdk/types/__init__.py
+predictorsdk/types/ambiguous_identifier_error.py
 predictorsdk/types/canonical_sports_event.py
 predictorsdk/types/canonical_sports_outcome.py
 predictorsdk/types/canonical_sports_participant.py
@@ -64,6 +66,7 @@ predictorsdk/types/event_response.py
 predictorsdk/types/event_response_platform.py
 predictorsdk/types/get_event_request_platform.py
 predictorsdk/types/get_market_request_platform.py
+predictorsdk/types/get_markets_request_provider.py
 predictorsdk/types/market_category.py
 predictorsdk/types/market_detail_fee_leg.py
 predictorsdk/types/market_detail_fee_leg_model.py
@@ -71,6 +74,7 @@ predictorsdk/types/market_detail_fee_rounding.py
 predictorsdk/types/market_detail_fee_rounding_direction.py
 predictorsdk/types/market_detail_outcome.py
 predictorsdk/types/market_detail_pricing.py
+predictorsdk/types/market_detail_pricing_as_of_kind.py
 predictorsdk/types/market_detail_pricing_availability.py
 predictorsdk/types/market_detail_pricing_scale.py
 predictorsdk/types/market_detail_pricing_source.py
@@ -83,6 +87,7 @@ predictorsdk/types/market_detail_trading_fees_availability.py
 predictorsdk/types/market_detail_trading_fees_charge_basis.py
 predictorsdk/types/market_detail_trading_fees_source.py
 predictorsdk/types/markets_list_response.py
+predictorsdk/types/markets_snapshot.py
 predictorsdk/types/pagination_block.py
 predictorsdk/types/payment_required_error_action.py
 predictorsdk/types/payment_required_error_body.py

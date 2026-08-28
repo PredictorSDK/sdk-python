@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .markets_snapshot import MarketsSnapshot
 from .pagination_block import PaginationBlock
 from .unified_market import UnifiedMarket
 
@@ -12,6 +13,11 @@ class MarketsListResponse(UniversalBaseModel):
     data: typing.List[UnifiedMarket] = pydantic.Field()
     """
     Array of markets for the current page.
+    """
+
+    snapshot: MarketsSnapshot = pydantic.Field()
+    """
+    Freshness of the catalog snapshot this page was served from. Describes the DATA; `pagination` describes the page.
     """
 
     pagination: PaginationBlock = pydantic.Field()

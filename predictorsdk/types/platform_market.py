@@ -41,7 +41,7 @@ class PlatformMarket(UniversalBaseModel):
 
     outcome_ids: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
     """
-    Source outcome IDs. Present for platforms that use outcome IDs.
+    Source outcome IDs for the market named by `market_id`, sorted and de-duplicated. These are the same values `GET /v1/markets/{market_id}` returns as `outcomes[].outcome_id`, so they join directly. SX Bet's are `outcomeOne`/`outcomeTwo` — market-scoped, because SX Bet publishes no per-outcome token; read them together with `market_id`. Present for platforms that use outcome IDs.
     """
 
     if IS_PYDANTIC_V2:
