@@ -243,6 +243,8 @@ class PredictorSDK:
 
         This endpoint reads a stored snapshot rather than calling the venues, so the rows are as old as the last ingestion crawl, not as old as the request. `snapshot.observed_at` reports that age and is stable across a cursor traversal.
 
+        Kalshi's multivariate-event markets (user-built parlays under `KXMVECROSSCATEGORY…` tickers) are excluded from the catalog and from `pagination.total`; every leg they combine is listed individually. A parlay ticker still resolves on `GET /v1/markets/{market_id}`.
+
         Parameters
         ----------
         limit : typing.Optional[int]
@@ -841,6 +843,8 @@ class AsyncPredictorSDK:
         Providers are walked in a fixed sequence, so without a filter the first pages are all Kalshi. Narrow the traversal with `provider` and/or `category`; both are membership filters on the same immutable catalog snapshot, both compose, and `pagination.total` always counts the filtered set rather than the whole catalog.
 
         This endpoint reads a stored snapshot rather than calling the venues, so the rows are as old as the last ingestion crawl, not as old as the request. `snapshot.observed_at` reports that age and is stable across a cursor traversal.
+
+        Kalshi's multivariate-event markets (user-built parlays under `KXMVECROSSCATEGORY…` tickers) are excluded from the catalog and from `pagination.total`; every leg they combine is listed individually. A parlay ticker still resolves on `GET /v1/markets/{market_id}`.
 
         Parameters
         ----------
