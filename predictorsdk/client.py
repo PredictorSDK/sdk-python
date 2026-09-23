@@ -14,6 +14,7 @@ from .types.event_response import EventResponse
 from .types.get_event_request_platform import GetEventRequestPlatform
 from .types.get_market_request_platform import GetMarketRequestPlatform
 from .types.get_markets_request_provider import GetMarketsRequestProvider
+from .types.get_sports_matching_markets_request_player_prop_match import GetSportsMatchingMarketsRequestPlayerPropMatch
 from .types.market_category import MarketCategory
 from .types.market_detail_response import MarketDetailResponse
 from .types.markets_list_response import MarketsListResponse
@@ -152,16 +153,20 @@ class PredictorSDK:
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
         include_settled: typing.Optional[bool] = None,
+        player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
         event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         sxbet_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        alpha_arcade_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        prophetx_event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        prophetx_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers.
+        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, SX Bet market ID, AlphaArcade market ULID, ProphetX event ID, or ProphetX market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers. Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
 
         Parameters
         ----------
@@ -176,10 +181,13 @@ class PredictorSDK:
 
             A venue can keep quoting a market for months after the game (a 94-day-old row was still `status: open` with a live two-sided book when this was written), so the endpoint filters on the game date it already holds — the trailing date of the canonical `event_id` — rather than on an upstream status it cannot verify. Nothing is reported as settled that the venue has not settled; these events are simply not *current*, which is what the default page is for.
 
-            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, `?alpha_arcade_market_id=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+
+        player_prop_match : typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch]
+            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the compact moneyline bridge. Historical snapshots without verified player identity do not expose props.
 
         include_submarkets : typing.Optional[bool]
-            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged.
+            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged. Explicit `player_prop_match` requires this to be `true`.
 
         event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Provide the parameter multiple times for multiple events, up to 100 unique keys. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
@@ -188,13 +196,22 @@ class PredictorSDK:
             Kalshi event ticker(s) to find matching markets for (e.g. `KXNBAGAME-26OCT20OKCSAS`). Provide the parameter multiple times for multiple tickers, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `mlb-tor-cle-2026-09-02`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-pit-ne-2026-09-20`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             Predict market ID(s) to find matching markets for (e.g. `1607914`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             SX Bet market ID(s) to find matching markets for (e.g. `0xb4d047a709aae881e5ccad9d123592967644ee1df1f17078c762b388e41b81c5`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        alpha_arcade_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            AlphaArcade market ULID(s) to find matching markets for. Use `market_id` from an `ALPHA-ARCADE` row in a current matching list response; game-scoped IDs can disappear when the venue delists the game. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        prophetx_event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            ProphetX event ID(s) to find matching markets for (e.g. `1700008782`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        prophetx_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            ProphetX market ID(s) to find matching markets for (e.g. `1700008782:219`, resolving the favourite primary-line strike). Accepts a market ID or an event ID (mirroring how `kalshi_event_ticker` accepts market tickers). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -217,12 +234,16 @@ class PredictorSDK:
             limit=limit,
             cursor=cursor,
             include_settled=include_settled,
+            player_prop_match=player_prop_match,
             include_submarkets=include_submarkets,
             event_id=event_id,
             kalshi_event_ticker=kalshi_event_ticker,
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
+            alpha_arcade_market_id=alpha_arcade_market_id,
+            prophetx_event_id=prophetx_event_id,
+            prophetx_market_id=prophetx_market_id,
             request_options=request_options,
         )
         return _response.data
@@ -251,7 +272,7 @@ class PredictorSDK:
             Maximum number of markets to return per page. Range 1–100, default 25.
 
         cursor : typing.Optional[str]
-            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Market cursors stay bound to the immutable catalog snapshot that issued them. Replaced snapshots normally remain available for up to 24 hours, but storage pressure can evict a retained snapshot sooner; retry from the first page after a stale-cursor `400`.
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Market cursors stay bound to the immutable catalog snapshot that issued them. Replaced snapshots normally remain available for up to 8 hours, but storage pressure can evict a retained snapshot sooner; retry from the first page after a stale-cursor `400`.
 
         category : typing.Optional[MarketCategory]
             Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
@@ -321,9 +342,9 @@ class PredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketDetailResponse:
         """
-        Returns a single market across the six supported platforms (Kalshi, Polymarket, Predict, SX Bet, Hyperliquid, AlphaArcade). The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-27-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters.
+        Returns a single market across the eight supported platforms (Kalshi, Polymarket, Predict, SX Bet, Hyperliquid, AlphaArcade, ProphetX, Limitless). The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-27-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters.
 
-        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real markets and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer outcome ids collide with Polymarket/Predict numeric ids and are deliberately not inferred — route them via the composite form (`hyperliquid:<id>`) or `?platform=hyperliquid` (alias `hl`). AlphaArcade market ids are ULIDs (26-char Crockford base32, e.g. `01K0HQE3CEM2T2RDRWSCJ3V647`); like Hyperliquid they are not inferred in v1 — route them via the composite form (`alpha-arcade:<ulid>`) or `?platform=alpha-arcade` (alias `aa`).
+        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real markets and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer outcome ids collide with Polymarket/Predict numeric ids and are deliberately not inferred — route them via the composite form (`hyperliquid:<id>`) or `?platform=hyperliquid` (alias `hl`). AlphaArcade market ids are ULIDs (26-char Crockford base32, e.g. `01K0HQE3CEM2T2RDRWSCJ3V647`); like Hyperliquid they are not inferred in v1 — route them via the composite form (`alpha-arcade:<ulid>`) or `?platform=alpha-arcade` (alias `aa`). ProphetX market ids are `<event_id>:<market_id>` pairs (e.g. `1700008782:219` — the market id is a per-sport TYPE id repeated on every event of that sport, 219 being Moneyline on every NFL game, so the event half is the identity); like Hyperliquid they are not inferred in v1 — route them via the composite form (`prophetx:1700008782:219`) or `?platform=prophetx` (aliases `prophet-x`, `px`). v1 resolves the favourite (primary-line) strike of a spread/total. Limitless market ids are kebab-case slugs (e.g. `england-vs-sri-lanka-1789383376774`); like Hyperliquid they are not inferred in v1 — the shape collides with Polymarket/Predict slugs — route them via the composite form (`limitless:<slug>`) or `?platform=limitless`.
 
         **If you already know the platform, always say so.** Every listing that hands you an identifier also hands you its platform, so the composite form — which `GET /v1/markets` returns natively in `data[].id` — or `?platform={row.platform}` costs nothing, skips the probe, and cannot 409. It is also strictly more available: the probe has to reach both candidates to prove there is no collision, so it fails when either is having an outage, while a named platform only depends on that one.
 
@@ -335,19 +356,19 @@ class PredictorSDK:
 
         **Bounding quote freshness.** `pricing.as_of` is the provider's own timestamp and does not mean the same thing on every platform — on Hyperliquid it moves with the order book, while on Kalshi it is a record write measured anywhere from 15 hours to 137 days old on markets reporting `status: open` with a live two-sided book. `pricing.as_of_kind` names which one you received (`quote` / `record_refresh` / `record_static` / `unknown`), so read it before applying an age bound to `as_of`; only `quote` tracks the quote closely enough to bound at all. `pricing.observed_at` is when this server read the quotes, means the same thing on every provider, and is therefore the field to bound when you need one threshold that behaves identically across platforms. It bounds the age of the read, not of the quote: this route reads the venue live per request and caches nothing, so on a `record_static` provider a fresh `observed_at` beside a day-old `as_of` is the honest description of what the venue served, and the executable price should come from that venue's own book.
 
-        The `trading_fees` tier reports what the VENUE charges to trade this market — its own published fee parameters, normalized to one shape across all six platforms, so cross-venue cost comparison stops requiring six private formulas. Nothing here relates to PredictorSDK's subscription pricing. It is always present, and `trading_fees.availability` distinguishes published parameters from per-account rates that need your own venue credentials (SX Bet, Hyperliquid), from a venue that publishes nothing, and from a fee of genuinely zero. Only Kalshi costs extra upstream hops for it (its parameters live on the parent series plus any scheduled per-event override, all TTL-cached and bounded); those degrade to `availability: "unavailable"` rather than failing the lookup, exactly like the pricing tier. See the `MarketDetailTradingFees` schema for the formulas and for what is deliberately out of scope.
+        The `trading_fees` tier reports what the VENUE charges to trade this market — its own published fee parameters, normalized to one shape across all eight platforms, so cross-venue cost comparison stops requiring eight private formulas. Nothing here relates to PredictorSDK's subscription pricing. It is always present, and `trading_fees.availability` distinguishes published parameters from per-account rates that need your own venue credentials (SX Bet, Hyperliquid), from a venue that publishes nothing, and from a fee of genuinely zero. Only Kalshi costs extra upstream hops for it (its parameters live on the parent series plus any scheduled per-event override, all TTL-cached and bounded); those degrade to `availability: "unavailable"` rather than failing the lookup, exactly like the pricing tier. See the `MarketDetailTradingFees` schema for the formulas and for what is deliberately out of scope.
 
         Parameters
         ----------
         market_id : str
-            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-27-SAS`), Polymarket numeric id or slug (`540817` or `mlb-tor-cle-2026-09-02`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`), Hyperliquid outcome id (use the composite `hyperliquid:<outcome-id>` or `?platform=hyperliquid` — bare integer ids aren't inferred).
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-27-SAS`), Polymarket numeric id or slug (`540817` or `nfl-pit-ne-2026-09-20`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`), Hyperliquid outcome id (use the composite `hyperliquid:<outcome-id>` or `?platform=hyperliquid` — bare integer ids aren't inferred).
 
             **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Prefer the composite form — it is what `GET /v1/markets` returns in `data[].id` — or pass `?platform=`.
 
             **Sports identifiers expire.** Kalshi game tickers, Polymarket game slugs, and Hyperliquid outcome ids are recycled or delisted as events settle — Hyperliquid's live catalog is a handful of daily-recurring outcomes, so any specific integer id there is valid for roughly a day. Take current ids from `GET /v1/markets` or `GET /v1/matching-markets/sports` rather than copying one out of this reference. Long-dated markets (Kalshi season futures, multi-year AlphaArcade questions) and settled Polymarket/Predict/SX Bet ids stay resolvable.
 
         platform : typing.Optional[GetMarketRequestPlatform]
-            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid integer ids collide with these numerics and are not inferred — use the composite `hyperliquid:<id>` or `?platform=hyperliquid` (alias `hl`). Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
+            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid integer ids collide with these numerics and are not inferred — use the composite `hyperliquid:<id>` or `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs and Limitless slugs are not inferred either — use the composite form (`alpha-arcade:<ulid>`, `limitless:<slug>`) or the matching `?platform=` value. Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -542,7 +563,7 @@ class PredictorSDK:
         """
         Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, a Predict market identifier, a Hyperliquid question/outcome integer id, or an AlphaArcade market ULID. The `platform` is inferred from the ID format when unambiguous (`KX…` → Kalshi, `L\\d+` → SX Bet). The composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `predict:1607914`) also dispatches unambiguously by prefix.
 
-        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real events and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer ids also collide with those numerics and require `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs are not inferred in v1 either — require `?platform=alpha-arcade` (alias `aa`). An AlphaArcade multi-choice market resolves to an event whose nested markets are its options; a binary market (or a single option id) resolves to a single-market event.
+        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real events and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer ids also collide with those numerics and require `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs are not inferred in v1 either — require `?platform=alpha-arcade` (alias `aa`). ProphetX event ids are bare positive integers that collide with Polymarket/Predict numerics — require `?platform=prophetx` (aliases `prophet-x`, `px`) or the composite form (`prophetx:1700008782`). Limitless event ids are kebab-case slugs that collide with Polymarket/Predict slugs — require `?platform=limitless` or the composite form (`limitless:england-vs-sri-lanka-1789383376774`). An AlphaArcade multi-choice market resolves to an event whose nested markets are its options; a binary market (or a single option id) resolves to a single-market event.
 
         **If you already know the platform, always say so.** Every listing that hands you an identifier also hands you its platform, so `?platform={row.platform}` (or the composite form) costs nothing, skips the probe, and cannot 409. It is also strictly more available: the probe has to reach both candidates to prove there is no collision, so it fails when either is having an outage, while a named platform only depends on that one.
 
@@ -555,7 +576,7 @@ class PredictorSDK:
         Parameters
         ----------
         event_id : str
-            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`mlb-tor-cle-2026-09-02`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`nfl-pit-ne-2026-09-20`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
 
             **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every row of `GET /v1/matching-markets/sports` carries the `platform` that goes with its `event_id`.
 
@@ -745,16 +766,20 @@ class AsyncPredictorSDK:
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
         include_settled: typing.Optional[bool] = None,
+        player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
         event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         sxbet_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        alpha_arcade_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        prophetx_event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        prophetx_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, or SX Bet market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers.
+        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, SX Bet market ID, AlphaArcade market ULID, ProphetX event ID, or ProphetX market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers. Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
 
         Parameters
         ----------
@@ -769,10 +794,13 @@ class AsyncPredictorSDK:
 
             A venue can keep quoting a market for months after the game (a 94-day-old row was still `status: open` with a live two-sided book when this was written), so the endpoint filters on the game date it already holds — the trailing date of the canonical `event_id` — rather than on an upstream status it cannot verify. Nothing is reported as settled that the venue has not settled; these events are simply not *current*, which is what the default page is for.
 
-            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, `?alpha_arcade_market_id=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+
+        player_prop_match : typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch]
+            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the compact moneyline bridge. Historical snapshots without verified player identity do not expose props.
 
         include_submarkets : typing.Optional[bool]
-            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged.
+            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged. Explicit `player_prop_match` requires this to be `true`.
 
         event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Provide the parameter multiple times for multiple events, up to 100 unique keys. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
@@ -781,13 +809,22 @@ class AsyncPredictorSDK:
             Kalshi event ticker(s) to find matching markets for (e.g. `KXNBAGAME-26OCT20OKCSAS`). Provide the parameter multiple times for multiple tickers, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `mlb-tor-cle-2026-09-02`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+            Polymarket market slug(s) to find matching markets for (e.g. `nfl-pit-ne-2026-09-20`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             Predict market ID(s) to find matching markets for (e.g. `1607914`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
             SX Bet market ID(s) to find matching markets for (e.g. `0xb4d047a709aae881e5ccad9d123592967644ee1df1f17078c762b388e41b81c5`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        alpha_arcade_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            AlphaArcade market ULID(s) to find matching markets for. Use `market_id` from an `ALPHA-ARCADE` row in a current matching list response; game-scoped IDs can disappear when the venue delists the game. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        prophetx_event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            ProphetX event ID(s) to find matching markets for (e.g. `1700008782`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+
+        prophetx_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            ProphetX market ID(s) to find matching markets for (e.g. `1700008782:219`, resolving the favourite primary-line strike). Accepts a market ID or an event ID (mirroring how `kalshi_event_ticker` accepts market tickers). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -818,12 +855,16 @@ class AsyncPredictorSDK:
             limit=limit,
             cursor=cursor,
             include_settled=include_settled,
+            player_prop_match=player_prop_match,
             include_submarkets=include_submarkets,
             event_id=event_id,
             kalshi_event_ticker=kalshi_event_ticker,
             polymarket_market_slug=polymarket_market_slug,
             predict_market_id=predict_market_id,
             sxbet_market_id=sxbet_market_id,
+            alpha_arcade_market_id=alpha_arcade_market_id,
+            prophetx_event_id=prophetx_event_id,
+            prophetx_market_id=prophetx_market_id,
             request_options=request_options,
         )
         return _response.data
@@ -852,7 +893,7 @@ class AsyncPredictorSDK:
             Maximum number of markets to return per page. Range 1–100, default 25.
 
         cursor : typing.Optional[str]
-            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Market cursors stay bound to the immutable catalog snapshot that issued them. Replaced snapshots normally remain available for up to 24 hours, but storage pressure can evict a retained snapshot sooner; retry from the first page after a stale-cursor `400`.
+            Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Market cursors stay bound to the immutable catalog snapshot that issued them. Replaced snapshots normally remain available for up to 8 hours, but storage pressure can evict a retained snapshot sooner; retry from the first page after a stale-cursor `400`.
 
         category : typing.Optional[MarketCategory]
             Canonical top-level category filter. This is PredictorSDK's normalized category, not a provider-native tag. Cursors are bound to the category filter used to create them.
@@ -938,9 +979,9 @@ class AsyncPredictorSDK:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> MarketDetailResponse:
         """
-        Returns a single market across the six supported platforms (Kalshi, Polymarket, Predict, SX Bet, Hyperliquid, AlphaArcade). The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-27-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters.
+        Returns a single market across the eight supported platforms (Kalshi, Polymarket, Predict, SX Bet, Hyperliquid, AlphaArcade, ProphetX, Limitless). The `market_id` is either the composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `kalshi:KXNBA-27-SAS`) or the platform-native identifier. Composite IDs dispatch unambiguously by prefix. Native IDs are routed by format inference: Kalshi tickers match the all-caps-with-hyphens shape (`KX…-…`); SX Bet hashes match `0x` + 64 hex characters.
 
-        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real markets and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer outcome ids collide with Polymarket/Predict numeric ids and are deliberately not inferred — route them via the composite form (`hyperliquid:<id>`) or `?platform=hyperliquid` (alias `hl`). AlphaArcade market ids are ULIDs (26-char Crockford base32, e.g. `01K0HQE3CEM2T2RDRWSCJ3V647`); like Hyperliquid they are not inferred in v1 — route them via the composite form (`alpha-arcade:<ulid>`) or `?platform=alpha-arcade` (alias `aa`).
+        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real markets and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer outcome ids collide with Polymarket/Predict numeric ids and are deliberately not inferred — route them via the composite form (`hyperliquid:<id>`) or `?platform=hyperliquid` (alias `hl`). AlphaArcade market ids are ULIDs (26-char Crockford base32, e.g. `01K0HQE3CEM2T2RDRWSCJ3V647`); like Hyperliquid they are not inferred in v1 — route them via the composite form (`alpha-arcade:<ulid>`) or `?platform=alpha-arcade` (alias `aa`). ProphetX market ids are `<event_id>:<market_id>` pairs (e.g. `1700008782:219` — the market id is a per-sport TYPE id repeated on every event of that sport, 219 being Moneyline on every NFL game, so the event half is the identity); like Hyperliquid they are not inferred in v1 — route them via the composite form (`prophetx:1700008782:219`) or `?platform=prophetx` (aliases `prophet-x`, `px`). v1 resolves the favourite (primary-line) strike of a spread/total. Limitless market ids are kebab-case slugs (e.g. `england-vs-sri-lanka-1789383376774`); like Hyperliquid they are not inferred in v1 — the shape collides with Polymarket/Predict slugs — route them via the composite form (`limitless:<slug>`) or `?platform=limitless`.
 
         **If you already know the platform, always say so.** Every listing that hands you an identifier also hands you its platform, so the composite form — which `GET /v1/markets` returns natively in `data[].id` — or `?platform={row.platform}` costs nothing, skips the probe, and cannot 409. It is also strictly more available: the probe has to reach both candidates to prove there is no collision, so it fails when either is having an outage, while a named platform only depends on that one.
 
@@ -952,19 +993,19 @@ class AsyncPredictorSDK:
 
         **Bounding quote freshness.** `pricing.as_of` is the provider's own timestamp and does not mean the same thing on every platform — on Hyperliquid it moves with the order book, while on Kalshi it is a record write measured anywhere from 15 hours to 137 days old on markets reporting `status: open` with a live two-sided book. `pricing.as_of_kind` names which one you received (`quote` / `record_refresh` / `record_static` / `unknown`), so read it before applying an age bound to `as_of`; only `quote` tracks the quote closely enough to bound at all. `pricing.observed_at` is when this server read the quotes, means the same thing on every provider, and is therefore the field to bound when you need one threshold that behaves identically across platforms. It bounds the age of the read, not of the quote: this route reads the venue live per request and caches nothing, so on a `record_static` provider a fresh `observed_at` beside a day-old `as_of` is the honest description of what the venue served, and the executable price should come from that venue's own book.
 
-        The `trading_fees` tier reports what the VENUE charges to trade this market — its own published fee parameters, normalized to one shape across all six platforms, so cross-venue cost comparison stops requiring six private formulas. Nothing here relates to PredictorSDK's subscription pricing. It is always present, and `trading_fees.availability` distinguishes published parameters from per-account rates that need your own venue credentials (SX Bet, Hyperliquid), from a venue that publishes nothing, and from a fee of genuinely zero. Only Kalshi costs extra upstream hops for it (its parameters live on the parent series plus any scheduled per-event override, all TTL-cached and bounded); those degrade to `availability: "unavailable"` rather than failing the lookup, exactly like the pricing tier. See the `MarketDetailTradingFees` schema for the formulas and for what is deliberately out of scope.
+        The `trading_fees` tier reports what the VENUE charges to trade this market — its own published fee parameters, normalized to one shape across all eight platforms, so cross-venue cost comparison stops requiring eight private formulas. Nothing here relates to PredictorSDK's subscription pricing. It is always present, and `trading_fees.availability` distinguishes published parameters from per-account rates that need your own venue credentials (SX Bet, Hyperliquid), from a venue that publishes nothing, and from a fee of genuinely zero. Only Kalshi costs extra upstream hops for it (its parameters live on the parent series plus any scheduled per-event override, all TTL-cached and bounded); those degrade to `availability: "unavailable"` rather than failing the lookup, exactly like the pricing tier. See the `MarketDetailTradingFees` schema for the formulas and for what is deliberately out of scope.
 
         Parameters
         ----------
         market_id : str
-            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-27-SAS`), Polymarket numeric id or slug (`540817` or `mlb-tor-cle-2026-09-02`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`), Hyperliquid outcome id (use the composite `hyperliquid:<outcome-id>` or `?platform=hyperliquid` — bare integer ids aren't inferred).
+            Composite (`{provider}:{native_id}`) or platform-native market identifier. Examples per platform: Kalshi market ticker (`KXNBA-27-SAS`), Polymarket numeric id or slug (`540817` or `nfl-pit-ne-2026-09-20`), Predict market id (`356635`), SX Bet `marketHash` (`0x…64hex`), Hyperliquid outcome id (use the composite `hyperliquid:<outcome-id>` or `?platform=hyperliquid` — bare integer ids aren't inferred).
 
             **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Prefer the composite form — it is what `GET /v1/markets` returns in `data[].id` — or pass `?platform=`.
 
             **Sports identifiers expire.** Kalshi game tickers, Polymarket game slugs, and Hyperliquid outcome ids are recycled or delisted as events settle — Hyperliquid's live catalog is a handful of daily-recurring outcomes, so any specific integer id there is valid for roughly a day. Take current ids from `GET /v1/markets` or `GET /v1/matching-markets/sports` rather than copying one out of this reference. Long-dated markets (Kalshi season futures, multi-year AlphaArcade questions) and settled Polymarket/Predict/SX Bet ids stay resolvable.
 
         platform : typing.Optional[GetMarketRequestPlatform]
-            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid integer ids collide with these numerics and are not inferred — use the composite `hyperliquid:<id>` or `?platform=hyperliquid` (alias `hl`). Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
+            Optional platform override. When omitted, inferred from the composite prefix or from the native ID format (`KX…` → Kalshi, `0x…64hex` → SX Bet). Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid integer ids collide with these numerics and are not inferred — use the composite `hyperliquid:<id>` or `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs and Limitless slugs are not inferred either — use the composite form (`alpha-arcade:<ulid>`, `limitless:<slug>`) or the matching `?platform=` value. Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. When the override contradicts a composite prefix (e.g. `kalshi:X` with `?platform=polymarket`), the request returns 400.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1191,7 +1232,7 @@ class AsyncPredictorSDK:
         """
         Returns a single event and the markets nested under it on the identified platform. The `event_id` is the platform's native identifier — a Kalshi `event_ticker`, a Polymarket event slug, an SX Bet `eventId`, a Predict market identifier, a Hyperliquid question/outcome integer id, or an AlphaArcade market ULID. The `platform` is inferred from the ID format when unambiguous (`KX…` → Kalshi, `L\\d+` → SX Bet). The composite form returned by `GET /v1/markets` (`{provider}:{native_id}`, e.g. `predict:1607914`) also dispatches unambiguously by prefix.
 
-        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real events and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer ids also collide with those numerics and require `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs are not inferred in v1 either — require `?platform=alpha-arcade` (alias `aa`). An AlphaArcade multi-choice market resolves to an event whose nested markets are its options; a binary market (or a single option id) resolves to a single-market event.
+        **A bare numeric id or kebab-case slug does not name its platform.** Polymarket and Predict share both shapes, so when `?platform=` is omitted the service probes every candidate and answers only if exactly one of them holds that identifier. If two do, the identifier names two different real events and the request fails with `409` listing both — it does not pick one. Retry with `?platform=` or the composite form. Hyperliquid integer ids also collide with those numerics and require `?platform=hyperliquid` (alias `hl`). AlphaArcade ULIDs are not inferred in v1 either — require `?platform=alpha-arcade` (alias `aa`). ProphetX event ids are bare positive integers that collide with Polymarket/Predict numerics — require `?platform=prophetx` (aliases `prophet-x`, `px`) or the composite form (`prophetx:1700008782`). Limitless event ids are kebab-case slugs that collide with Polymarket/Predict slugs — require `?platform=limitless` or the composite form (`limitless:england-vs-sri-lanka-1789383376774`). An AlphaArcade multi-choice market resolves to an event whose nested markets are its options; a binary market (or a single option id) resolves to a single-market event.
 
         **If you already know the platform, always say so.** Every listing that hands you an identifier also hands you its platform, so `?platform={row.platform}` (or the composite form) costs nothing, skips the probe, and cannot 409. It is also strictly more available: the probe has to reach both candidates to prove there is no collision, so it fails when either is having an outage, while a named platform only depends on that one.
 
@@ -1204,7 +1245,7 @@ class AsyncPredictorSDK:
         Parameters
         ----------
         event_id : str
-            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`mlb-tor-cle-2026-09-02`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
+            Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`nfl-pit-ne-2026-09-20`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
 
             **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every row of `GET /v1/matching-markets/sports` carries the `platform` that goes with its `event_id`.
 

@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
     from .canonical_sports_source_outcome import CanonicalSportsSourceOutcome
     from .canonical_sports_subject import CanonicalSportsSubject
     from .canonical_sports_submarket import CanonicalSportsSubmarket
+    from .canonical_sports_submarket_settlement_equivalence import CanonicalSportsSubmarketSettlementEquivalence
     from .categories_response import CategoriesResponse
     from .category_info import CategoryInfo
     from .crypto_price_item import CryptoPriceItem
@@ -28,6 +29,7 @@ if typing.TYPE_CHECKING:
     from .get_event_request_platform import GetEventRequestPlatform
     from .get_market_request_platform import GetMarketRequestPlatform
     from .get_markets_request_provider import GetMarketsRequestProvider
+    from .get_sports_matching_markets_request_player_prop_match import GetSportsMatchingMarketsRequestPlayerPropMatch
     from .market_category import MarketCategory
     from .market_detail_fee_leg import MarketDetailFeeLeg
     from .market_detail_fee_leg_model import MarketDetailFeeLegModel
@@ -56,6 +58,10 @@ if typing.TYPE_CHECKING:
     from .plans_response import PlansResponse
     from .platform_market import PlatformMarket
     from .platform_market_platform import PlatformMarketPlatform
+    from .player_prop_rule_comparison import PlayerPropRuleComparison
+    from .player_prop_rule_comparison_comparison import PlayerPropRuleComparisonComparison
+    from .player_prop_rule_comparison_rule import PlayerPropRuleComparisonRule
+    from .player_prop_rule_source_value import PlayerPropRuleSourceValue
     from .polymarket_position import PolymarketPosition
     from .polymarket_positions_response import PolymarketPositionsResponse
     from .polymarket_wallet_response import PolymarketWalletResponse
@@ -73,6 +79,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CanonicalSportsSourceOutcome": ".canonical_sports_source_outcome",
     "CanonicalSportsSubject": ".canonical_sports_subject",
     "CanonicalSportsSubmarket": ".canonical_sports_submarket",
+    "CanonicalSportsSubmarketSettlementEquivalence": ".canonical_sports_submarket_settlement_equivalence",
     "CategoriesResponse": ".categories_response",
     "CategoryInfo": ".category_info",
     "CryptoPriceItem": ".crypto_price_item",
@@ -85,6 +92,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "GetEventRequestPlatform": ".get_event_request_platform",
     "GetMarketRequestPlatform": ".get_market_request_platform",
     "GetMarketsRequestProvider": ".get_markets_request_provider",
+    "GetSportsMatchingMarketsRequestPlayerPropMatch": ".get_sports_matching_markets_request_player_prop_match",
     "MarketCategory": ".market_category",
     "MarketDetailFeeLeg": ".market_detail_fee_leg",
     "MarketDetailFeeLegModel": ".market_detail_fee_leg_model",
@@ -113,6 +121,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PlansResponse": ".plans_response",
     "PlatformMarket": ".platform_market",
     "PlatformMarketPlatform": ".platform_market_platform",
+    "PlayerPropRuleComparison": ".player_prop_rule_comparison",
+    "PlayerPropRuleComparisonComparison": ".player_prop_rule_comparison_comparison",
+    "PlayerPropRuleComparisonRule": ".player_prop_rule_comparison_rule",
+    "PlayerPropRuleSourceValue": ".player_prop_rule_source_value",
     "PolymarketPosition": ".polymarket_position",
     "PolymarketPositionsResponse": ".polymarket_positions_response",
     "PolymarketWalletResponse": ".polymarket_wallet_response",
@@ -154,6 +166,7 @@ __all__ = [
     "CanonicalSportsSourceOutcome",
     "CanonicalSportsSubject",
     "CanonicalSportsSubmarket",
+    "CanonicalSportsSubmarketSettlementEquivalence",
     "CategoriesResponse",
     "CategoryInfo",
     "CryptoPriceItem",
@@ -166,6 +179,7 @@ __all__ = [
     "GetEventRequestPlatform",
     "GetMarketRequestPlatform",
     "GetMarketsRequestProvider",
+    "GetSportsMatchingMarketsRequestPlayerPropMatch",
     "MarketCategory",
     "MarketDetailFeeLeg",
     "MarketDetailFeeLegModel",
@@ -194,6 +208,10 @@ __all__ = [
     "PlansResponse",
     "PlatformMarket",
     "PlatformMarketPlatform",
+    "PlayerPropRuleComparison",
+    "PlayerPropRuleComparisonComparison",
+    "PlayerPropRuleComparisonRule",
+    "PlayerPropRuleSourceValue",
     "PolymarketPosition",
     "PolymarketPositionsResponse",
     "PolymarketWalletResponse",
