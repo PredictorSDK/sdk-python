@@ -11,7 +11,7 @@ class PlatformMarket(UniversalBaseModel):
     platform: PlatformMarketPlatform
     event_id: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Provider-native parent event or fixture identifier for the path in `GET /v1/events/{event_id}`. Kalshi uses its event ticker, Polymarket its event slug (or numeric event ID fallback), Predict its market ID, SX Bet its `L...` fixture ID, AlphaArcade its parent market ULID, and ProphetX its integer event id. Always pair it with the events endpoint's `platform` query parameter, passing this row's `platform` value (matched case-insensitively). Without that override, ambiguous identifiers probe only Polymarket and Predict: two hits return `409`, one hit returns that provider's event, and no hits return `404`. AlphaArcade and ProphetX are never probed or inferred; their native IDs require the override or a provider-prefixed composite ID to reach the correct venue. Retained snapshots created before this field was introduced may omit it.
+    Provider-native parent event or fixture identifier for the path in `GET /v1/events/{event_id}`. Kalshi uses its event ticker, Polymarket its event slug (or numeric event ID fallback), Predict its market ID, SX Bet its `L...` fixture ID, AlphaArcade its parent market ULID, ProphetX its integer event id, and Pred its parent market id (`0x` + 64 hex). Always pair it with the events endpoint's `platform` query parameter, passing this row's `platform` value (matched case-insensitively). Without that override, ambiguous identifiers probe only Polymarket and Predict: two hits return `409`, one hit returns that provider's event, and no hits return `404`. AlphaArcade, ProphetX and Pred are never probed or inferred; their native IDs require the override or a provider-prefixed composite ID to reach the correct venue. Retained snapshots created before this field was introduced may omit it.
     """
 
     event_ticker: typing.Optional[str] = pydantic.Field(default=None)
@@ -36,12 +36,12 @@ class PlatformMarket(UniversalBaseModel):
 
     market_id: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Source market ID. Present for platforms other than Kalshi and Polymarket.
+    Source market ID. Present for platforms other than Kalshi and Polymarket. Pred's is the `<parent_market_id>:<child_market_id>` pair — the composite form `pred:<parent>:<child>` resolves it on `GET /v1/markets/{market_id}`.
     """
 
     outcome_ids: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
     """
-    Source outcome IDs for the market named by `market_id`, sorted and de-duplicated. These are the same values `GET /v1/markets/{market_id}` returns as `outcomes[].outcome_id`, so they join directly. SX Bet's are `outcomeOne`/`outcomeTwo` — market-scoped, because SX Bet publishes no per-outcome token; read them together with `market_id`. ProphetX's are small integers (`4`, `5`) that are likewise market-scoped. Present for platforms that use outcome IDs.
+    Source outcome IDs for the market named by `market_id`, sorted and de-duplicated. These are the same values `GET /v1/markets/{market_id}` returns as `outcomes[].outcome_id`, so they join directly. SX Bet's are `outcomeOne`/`outcomeTwo` — market-scoped, because SX Bet publishes no per-outcome token; read them together with `market_id`. ProphetX's are small integers (`4`, `5`) that are likewise market-scoped. Pred's are `yes`/`no` — also market-scoped, naming the LONG/SHORT side of the child market the row's `market_id` pair addresses. Present for platforms that use outcome IDs.
     """
 
     if IS_PYDANTIC_V2:

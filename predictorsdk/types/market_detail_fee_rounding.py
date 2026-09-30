@@ -16,7 +16,7 @@ class MarketDetailFeeRounding(UniversalBaseModel):
 
     direction: MarketDetailFeeRoundingDirection = pydantic.Field()
     """
-    `up` — the venue rounds the fee UP to the next increment (Kalshi ceils to $0.0001; AlphaArcade ceils to 1e-6 USDC). `nearest` — the venue rounds to the nearest increment (Polymarket rounds to 5 decimal places, with 0.00001 USDC the smallest fee charged).
+    `up` — the venue rounds the fee UP to the next increment (Kalshi ceils to $0.0001; AlphaArcade ceils to 1e-6 USDC). `nearest` — the venue rounds to the nearest increment (Polymarket rounds to 5 decimal places, with 0.00001 USDC the smallest fee charged). `down` — the venue truncates the fee to the increment (Pred computes in 6-decimal base units and always rounds down; a fee below the smallest chargeable unit — 0.000001 — is zero, not clamped up to it).
     """
 
     increment: float = pydantic.Field()

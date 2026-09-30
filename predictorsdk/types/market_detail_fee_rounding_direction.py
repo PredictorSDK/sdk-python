@@ -2,4 +2,4 @@
 
 import typing
 
-MarketDetailFeeRoundingDirection = typing.Union[typing.Literal["up", "nearest"], typing.Any]
+MarketDetailFeeRoundingDirection = typing.Union[typing.Literal["up", "nearest", "down"], typing.Any]
