@@ -19,7 +19,7 @@ class PolymarketPosition(UniversalBaseModel):
 
     shares: float = pydantic.Field()
     """
-    Number of outcome shares held.
+    Current number of outcome shares held, not lifetime shares bought.
     """
 
     if IS_PYDANTIC_V2:

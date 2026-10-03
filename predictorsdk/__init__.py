@@ -67,6 +67,7 @@ if typing.TYPE_CHECKING:
         PolymarketPositionsResponse,
         PolymarketWalletResponse,
         SportsMatchingResponse,
+        SportsMatchingSnapshot,
         UnifiedMarket,
         UnifiedMarketProvider,
     )
@@ -157,6 +158,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PredictorSDKEnvironment": ".environment",
     "ServiceUnavailableError": ".errors",
     "SportsMatchingResponse": ".types",
+    "SportsMatchingSnapshot": ".types",
     "TooManyRequestsError": ".errors",
     "UnauthorizedError": ".errors",
     "UnifiedMarket": ".types",
@@ -258,6 +260,7 @@ __all__ = [
     "PredictorSDKEnvironment",
     "ServiceUnavailableError",
     "SportsMatchingResponse",
+    "SportsMatchingSnapshot",
     "TooManyRequestsError",
     "UnauthorizedError",
     "UnifiedMarket",

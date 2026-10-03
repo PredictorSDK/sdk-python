@@ -9,7 +9,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class PaginationBlock(UniversalBaseModel):
     limit: int = pydantic.Field()
     """
-    Number of items requested per page (echoes the `limit` query param).
+    Page size this page was served with. It echoes the first-page `limit` query value; for cursor-native passthrough endpoints, a supplied cursor's page size takes precedence on later pages.
     """
 
     total: int = pydantic.Field()

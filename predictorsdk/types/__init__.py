@@ -66,6 +66,7 @@ if typing.TYPE_CHECKING:
     from .polymarket_positions_response import PolymarketPositionsResponse
     from .polymarket_wallet_response import PolymarketWalletResponse
     from .sports_matching_response import SportsMatchingResponse
+    from .sports_matching_snapshot import SportsMatchingSnapshot
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
 _dynamic_imports: typing.Dict[str, str] = {
@@ -129,6 +130,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PolymarketPositionsResponse": ".polymarket_positions_response",
     "PolymarketWalletResponse": ".polymarket_wallet_response",
     "SportsMatchingResponse": ".sports_matching_response",
+    "SportsMatchingSnapshot": ".sports_matching_snapshot",
     "UnifiedMarket": ".unified_market",
     "UnifiedMarketProvider": ".unified_market_provider",
 }
@@ -216,6 +218,7 @@ __all__ = [
     "PolymarketPositionsResponse",
     "PolymarketWalletResponse",
     "SportsMatchingResponse",
+    "SportsMatchingSnapshot",
     "UnifiedMarket",
     "UnifiedMarketProvider",
 ]

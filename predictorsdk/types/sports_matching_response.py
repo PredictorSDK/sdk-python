@@ -7,6 +7,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .canonical_sports_event import CanonicalSportsEvent
 from .pagination_block import PaginationBlock
 from .platform_market import PlatformMarket
+from .sports_matching_snapshot import SportsMatchingSnapshot
 
 
 class SportsMatchingResponse(UniversalBaseModel):
@@ -23,6 +24,11 @@ class SportsMatchingResponse(UniversalBaseModel):
     pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)
     """
     Pagination metadata for the current page. Present in list mode (no platform-ID filter). Absent in lookup mode since the response is bounded by the filter.
+    """
+
+    snapshot: SportsMatchingSnapshot = pydantic.Field()
+    """
+    Freshness of the matching snapshot this response was read from. Present in list and lookup mode alike. Describes the DATA; `pagination` describes the page.
     """
 
     if IS_PYDANTIC_V2:
