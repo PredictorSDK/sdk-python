@@ -12,7 +12,7 @@ from .sports_matching_snapshot import SportsMatchingSnapshot
 class SportsMatchingResponse(UniversalBaseModel):
     canonical_events: typing.Dict[str, CanonicalSportsEvent] = pydantic.Field()
     """
-    Matched events. Keyed by canonical event ID in list mode, and in lookup mode by each `event_id` or `source_id` exactly as sent (surrounding whitespace trimmed), so an identifier that matched nothing is simply absent. Present on every response, as `{}` when nothing matched.
+    Matched events. Keyed by canonical event ID in list mode, and in lookup mode by each `event_id` or `source_id` as sent (whitespace around the provider and ID trimmed; matching itself is case-insensitive), so an identifier that matched nothing is simply absent. Present on every response, as `{}` when nothing matched.
     """
 
     pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)

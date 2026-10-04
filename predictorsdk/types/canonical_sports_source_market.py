@@ -14,9 +14,9 @@ class CanonicalSportsSourceMarket(UniversalBaseModel):
     """
 
     provider: CanonicalSportsSourceMarketProvider
-    event_id: typing.Optional[str] = pydantic.Field(default=None)
+    event_id: str = pydantic.Field()
     """
-    The provider's own parent event for this market, for `GET /v1/events/{event_id}`: Kalshi's event ticker (a game's spread and total markets sit under events of their own), Polymarket's event slug, Predict's market ID, SX Bet's `L…` fixture ID, AlphaArcade's parent market ULID, ProphetX's integer event ID, or Pred's parent market ID. It names a parent, not this market, so it is not a `market_id`: a Kalshi event ticker answers `404` on market detail. Snapshots written before this field existed may omit it.
+    The provider's own parent event for this market, for `GET /v1/events/{event_id}`: Kalshi's event ticker (a game's spread and total markets sit under events of their own), Polymarket's event slug, Predict's market ID, SX Bet's `L…` fixture ID, AlphaArcade's parent market ULID, ProphetX's integer event ID, or Pred's parent market ID. It names a parent, not this market, so it is not a `market_id`: a Kalshi event ticker answers `404` on market detail.
     """
 
     market_id: str = pydantic.Field()
@@ -29,7 +29,7 @@ class CanonicalSportsSourceMarket(UniversalBaseModel):
     market_name: typing.Optional[str] = None
     market_slug: typing.Optional[str] = pydantic.Field(default=None)
     """
-    The venue's slug for this market, where it has one (Polymarket). `GET /v1/markets/{market_id}` accepts it in place of `market_id`.
+    The venue's slug for this market, where it has one (Polymarket and AlphaArcade). `source_id` accepts it. For market detail send `market_id`, which works on every venue: `GET /v1/markets/{market_id}` also accepts a Polymarket slug, but not an AlphaArcade one.
     """
 
     outcomes: typing.List[CanonicalSportsSourceOutcome]
