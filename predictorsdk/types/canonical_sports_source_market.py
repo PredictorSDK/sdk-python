@@ -21,12 +21,16 @@ class CanonicalSportsSourceMarket(UniversalBaseModel):
 
     market_id: str = pydantic.Field()
     """
-    Exact provider-native market identifier. It resolves on `GET /v1/markets/{market_id}`, either as-is or prefixed with this row's `provider` in the composite form `{provider}:{market_id}`.
+    Exact provider-native market identifier. It resolves on `GET /v1/markets/{market_id}`, either as-is or prefixed with this row's `provider` in the composite form `{provider}:{market_id}`. A ProphetX player prop's `market_id` names the line it was matched on, `<event_id>:<market_id>:<line>`: the pair alone resolves to whichever line ProphetX currently favours, and that moves before kickoff.
     
     One provider can contribute MORE THAN ONE entry to the same submarket, because a provider is free to model one canonical market as several native ones. Kalshi does exactly that for a game moneyline: it lists one binary market per team ("Arizona wins", "San Francisco wins"), so a Kalshi moneyline row appears twice, once per team ticker, each with its own `yes`/`no` outcomes. Group by `provider` if you need one row per venue; do not assume the list has at most one entry per provider.
     """
 
-    market_name: typing.Optional[str] = None
+    market_name: str = pydantic.Field()
+    """
+    The market's title, as `GET /v1/markets/{market_id}` titles it. SX Bet's market record names only the game, so an SX Bet title is its two selection names (`Dallas Cowboys -6.5 vs Tampa Bay Buccaneers +6.5`).
+    """
+
     market_slug: typing.Optional[str] = pydantic.Field(default=None)
     """
     The venue's slug for this market, where it has one (Polymarket and AlphaArcade). `source_id` accepts it. For market detail send `market_id`, which works on every venue: `GET /v1/markets/{market_id}` also accepts a Polymarket slug, but not an AlphaArcade one.

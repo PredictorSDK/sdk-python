@@ -6,13 +6,19 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .canonical_sports_event import CanonicalSportsEvent
 from .pagination_block import PaginationBlock
+from .sports_matching_lookup import SportsMatchingLookup
 from .sports_matching_snapshot import SportsMatchingSnapshot
 
 
 class SportsMatchingResponse(UniversalBaseModel):
-    canonical_events: typing.Dict[str, CanonicalSportsEvent] = pydantic.Field()
+    data: typing.List[CanonicalSportsEvent] = pydantic.Field()
     """
-    Matched events. Keyed by canonical event ID in list mode, and in lookup mode by each `event_id` or `source_id` as sent (whitespace around the provider and ID trimmed; matching itself is case-insensitive), so an identifier that matched nothing is simply absent. Present on every response, as `{}` when nothing matched.
+    Matched events, soonest scheduled start first, each once however many lookup identifiers found it. Present on every response, as `[]` when nothing matched.
+    """
+
+    lookups: typing.Optional[typing.Dict[str, SportsMatchingLookup]] = pydantic.Field(default=None)
+    """
+    Lookup mode only: every `event_id` and `source_id` sent, under its spelling as sent (whitespace around the provider and ID trimmed), with the canonical events in `data` that hold it. An identifier that found nothing is listed with no events. Absent in list mode.
     """
 
     pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)

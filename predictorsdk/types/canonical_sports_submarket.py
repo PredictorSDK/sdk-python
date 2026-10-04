@@ -32,8 +32,8 @@ class CanonicalSportsSubmarket(UniversalBaseModel):
 
     market_type: str
     segment: str
-    display_name: typing.Optional[str] = None
-    metric: typing.Optional[str] = None
+    display_name: str
+    metric: str
     line: typing.Optional[float] = pydantic.Field(default=None)
     """
     Unsigned threshold for totals and player props; signed handicap for spreads. Omitted for moneyline markets.
