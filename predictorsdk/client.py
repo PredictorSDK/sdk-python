@@ -156,25 +156,22 @@ class PredictorSDK:
         player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
         event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        sxbet_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        alpha_arcade_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        prophetx_event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        prophetx_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        pred_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        source_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, SX Bet market ID, AlphaArcade market ULID, ProphetX event ID, ProphetX market ID, or Pred market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers and to reach ProphetX and Pred at all. Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
+        Find cross-platform matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. Every response is a `canonical_events` map with one shape for every venue: each canonical event lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. By default each event carries only its full-game moneyline; `include_submarkets=true` adds every other matched submarket.
+
+        Without lookup parameters the endpoint lists every currently matched event with cursor-based pagination (default `limit=25`, max `100`); games whose date has passed are excluded unless you ask for them with `include_settled=true`. To look events up directly, pass canonical keys as `event_id` and any identifier a venue market publishes as `source_id={provider}:{id}`. Lookups return the full match immediately and skip pagination.
+
+        Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
 
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an event a response does not contain as unmatched — a lookup that finds nothing in a snapshot that stopped updating looks exactly like one that finds nothing in a current one.
 
         Parameters
         ----------
         limit : typing.Optional[int]
-            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored in lookup mode, when `event_id` or `source_id` is supplied.
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
@@ -184,40 +181,19 @@ class PredictorSDK:
 
             A venue can keep quoting a market for months after the game (a 94-day-old row was still `status: open` with a live two-sided book when this was written), so the endpoint filters on the game date it already holds — the trailing date of the canonical `event_id` — rather than on an upstream status it cannot verify. Nothing is reported as settled that the venue has not settled; these events are simply not *current*, which is what the default page is for.
 
-            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, `?alpha_arcade_market_id=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+            Because it selects the population, a lookup (`?event_id=` or `?source_id=`) for a past-dated event answers `200` with an empty `canonical_events` object unless this is `true`.
 
         player_prop_match : typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch]
-            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the compact moneyline bridge. Historical snapshots without verified player identity do not expose props.
+            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the default moneyline projection. Historical snapshots without verified player identity do not expose props.
 
         include_submarkets : typing.Optional[bool]
-            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged. Explicit `player_prop_match` requires this to be `true`.
+            When `true`, each event lists every matched submarket (spreads, totals, period lines and player props) instead of only its full-game moneyline. Every submarket has the same shape, so code written against the default reads the rest unchanged. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Explicit `player_prop_match` requires this to be `true`.
 
         event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Provide the parameter multiple times for multiple events, up to 100 unique keys. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+            Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Repeat the parameter for several events, and combine it freely with `source_id`, up to 100 unique identifiers in all. Lookup mode — pagination parameters are ignored. A provider identifier here is a `400`; send it as `source_id`.
 
-        kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNBAGAME-26OCT20OKCSAS`). Provide the parameter multiple times for multiple tickers, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-pit-ne-2026-09-20`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `1607914`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0xb4d047a709aae881e5ccad9d123592967644ee1df1f17078c762b388e41b81c5`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        alpha_arcade_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            AlphaArcade market ULID(s) to find matching markets for. Use `market_id` from an `ALPHA-ARCADE` row in a current matching list response; game-scoped IDs can disappear when the venue delists the game. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        prophetx_event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            ProphetX event ID(s) to find matching markets for (e.g. `1700008782`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        prophetx_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            ProphetX market ID(s) to find matching markets for (e.g. `1700008782:219`, resolving the favourite primary-line strike). Accepts a market ID or an event ID (mirroring how `kalshi_event_ticker` accepts market tickers). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        pred_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Pred market ID(s) to find matching markets for, in native form (no `pred:` prefix): the `<parent_market_id>:<child_market_id>` pair a `PRED` row publishes as `market_id`, or a bare parent market ID — the row's `event_id`, which Pred itself calls `parent_market_id` and `GET /v1/markets/pred:<parent>` also accepts. Both halves are `0x` + 64 hex. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+        source_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `canonical_events[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx` or `pred`; anything else is a `400`. Each matched event is keyed by the identifier exactly as sent (surrounding whitespace trimmed), so the keys of the response are the identifiers that matched. Repeat the parameter for several identifiers, across providers; combined with `event_id`, up to 100 unique identifiers in all. Lookup mode — pagination parameters are ignored. A lookup finds the event an identifier belongs to; set `include_submarkets=true` to see the submarket it names when that is not the moneyline.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -225,7 +201,7 @@ class PredictorSDK:
         Returns
         -------
         SportsMatchingResponse
-            Matching markets keyed by identifier
+            Matched canonical events keyed by identifier
 
         Examples
         --------
@@ -243,14 +219,7 @@ class PredictorSDK:
             player_prop_match=player_prop_match,
             include_submarkets=include_submarkets,
             event_id=event_id,
-            kalshi_event_ticker=kalshi_event_ticker,
-            polymarket_market_slug=polymarket_market_slug,
-            predict_market_id=predict_market_id,
-            sxbet_market_id=sxbet_market_id,
-            alpha_arcade_market_id=alpha_arcade_market_id,
-            prophetx_event_id=prophetx_event_id,
-            prophetx_market_id=prophetx_market_id,
-            pred_market_id=pred_market_id,
+            source_id=source_id,
             request_options=request_options,
         )
         return _response.data
@@ -359,7 +328,7 @@ class PredictorSDK:
 
         **What the pricing tier is for, and what it is not.** It reports the top of each venue's book, once, at the moment of your request. That is enough to see where a market is quoted, to compare venues, and to decide where to go and look harder. It is NOT an execution feed: there is no depth beyond the best level, no streaming, no per-outcome book on the platforms that publish only a market-wide mark, and nothing here is reserved for you — by the time you act, the level may be gone. Two limits are worth knowing before you write a strategy against it. First, `price` is a derived display number and a non-null `price` does not imply a tradeable one; read `pricing.availability` and prefer `bid`/`ask` for anything you intend to act on. Second, quote freshness is a property of the venue, not of this API — see *Bounding quote freshness* below. Route the actual order through the venue's own book.
 
-        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`as_of_kind`/`observed_at`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet, Hyperliquid, and AlphaArcade carry no pricing on the market record, so the server makes one bounded second fetch to the order book (`pricing.source=orderbook`) — SX Bet's best-odds endpoint, Hyperliquid's merged `l2Book`, or AlphaArcade's `get-full-orderbook` (a 4-sided YES/NO book; the second side's quotes are derived from the first by the cross-side complement, and the catalog midpoint serves as the price mark when the book is empty — reported as `pricing.availability=indicative`, since a mark that outlives its book is not a quote). On a book error the lookup still succeeds with identity intact and `pricing.availability` reflecting the marks. On timeout/error it degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Predict publishes a per-market `spreadThreshold` — the widest bid/ask spread it counts as liquidity — and this route honours it, so a Predict book outside its own market's threshold reports `indicative` rather than lending its midpoint the authority of `live`. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
+        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`as_of_kind`/`observed_at`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet, Hyperliquid, and AlphaArcade carry no pricing on the market record, so the server makes one bounded second fetch to the order book (`pricing.source=orderbook`) — SX Bet's `/orderbook-v3/snapshot`, Hyperliquid's merged `l2Book`, or AlphaArcade's `get-full-orderbook` (a 4-sided YES/NO book; the second side's quotes are derived from the first by the cross-side complement, and the catalog midpoint serves as the price mark when the book is empty — reported as `pricing.availability=indicative`, since a mark that outlives its book is not a quote). On a book error the lookup still succeeds with identity intact and `pricing.availability` reflecting the marks. On timeout/error it degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Predict publishes a per-market `spreadThreshold` — the widest bid/ask spread it counts as liquidity — and this route honours it, so a Predict book outside its own market's threshold reports `indicative` rather than lending its midpoint the authority of `live`. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
 
         **Bounding quote freshness.** `pricing.as_of` is the provider's own timestamp and does not mean the same thing on every platform — on Hyperliquid it moves with the order book, while on Kalshi it is a record write measured anywhere from 15 hours to 137 days old on markets reporting `status: open` with a live two-sided book. `pricing.as_of_kind` names which one you received (`quote` / `record_refresh` / `record_static` / `unknown`), so read it before applying an age bound to `as_of`; only `quote` tracks the quote closely enough to bound at all. `pricing.observed_at` is when this server read the quotes, means the same thing on every provider, and is therefore the field to bound when you need one threshold that behaves identically across platforms. It bounds the age of the read, not of the quote: this route reads the venue live per request and caches nothing, so on a `record_static` provider a fresh `observed_at` beside a day-old `as_of` is the honest description of what the venue served, and the executable price should come from that venue's own book.
 
@@ -585,9 +554,9 @@ class PredictorSDK:
         event_id : str
             Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`nfl-pit-ne-2026-09-20`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred), Pred parent market id (`0x…64hex`, requires `?platform=pred` since the shape collides with SX Bet market hashes). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
 
-            **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every row of `GET /v1/matching-markets/sports` carries the `platform` that goes with its `event_id`.
+            **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every source market in `GET /v1/matching-markets/sports` carries the `provider` that goes with its `event_id`.
 
-            **Sports identifiers expire.** Game tickers and slugs are delisted once an event settles, and Hyperliquid ids roll over daily. Take current ones from `GET /v1/matching-markets/sports` (every platform row carries its provider-native `event_id`) rather than copying one out of this reference.
+            **Sports identifiers expire.** Game tickers and slugs are delisted once an event settles, and Hyperliquid ids roll over daily. Take current ones from `GET /v1/matching-markets/sports` (every source market carries its provider's `event_id`) rather than copying one out of this reference.
 
         platform : typing.Optional[GetEventRequestPlatform]
             Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid question/outcome integer ids collide with these numerics and are not inferred — pass `?platform=hyperliquid` (alias `hl`). Pred parent ids share the `0x…64hex` shape with SX Bet market hashes and are not inferred either — pass `?platform=pred`. Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. Supplying a value that contradicts a composite `{provider}:` prefix is a `400`.
@@ -776,25 +745,22 @@ class AsyncPredictorSDK:
         player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
         event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        kalshi_event_ticker: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        polymarket_market_slug: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        predict_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        sxbet_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        alpha_arcade_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        prophetx_event_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        prophetx_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
-        pred_market_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        source_id: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SportsMatchingResponse:
         """
-        Find cross-platform market matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. When called without parameters, returns all currently matched sports markets with cursor-based pagination (default `limit=25`, max `100`) — games whose date has passed are excluded unless you ask for them with `include_settled=true`. Provide a canonical event key, Kalshi event ticker, Polymarket slug, Predict market ID, SX Bet market ID, AlphaArcade market ULID, ProphetX event ID, ProphetX market ID, or Pred market ID to look up a specific event — lookups return the full match immediately and skip pagination. Every platform row includes its provider-native `event_id` for use with `GET /v1/events/{event_id}`; pass that row's `platform` value as the events endpoint's `platform` query parameter, which is required to disambiguate Predict and AlphaArcade identifiers and to reach ProphetX and Pred at all. Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
+        Find cross-platform matches for sports events. Coverage is NBA, WNBA, NHL, MLB, and NFL; `canonical_events[].league` names the league and is the first segment of the canonical `event_id`. Every response is a `canonical_events` map with one shape for every venue: each canonical event lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. By default each event carries only its full-game moneyline; `include_submarkets=true` adds every other matched submarket.
+
+        Without lookup parameters the endpoint lists every currently matched event with cursor-based pagination (default `limit=25`, max `100`); games whose date has passed are excluded unless you ask for them with `include_settled=true`. To look events up directly, pass canonical keys as `event_id` and any identifier a venue market publishes as `source_id={provider}:{id}`. Lookups return the full match immediately and skip pagination.
+
+        Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
 
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an event a response does not contain as unmatched — a lookup that finds nothing in a snapshot that stopped updating looks exactly like one that finds nothing in a current one.
 
         Parameters
         ----------
         limit : typing.Optional[int]
-            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored when a platform-ID filter is supplied.
+            Maximum number of matched events to return per page. Range 1–100, default 25. Ignored in lookup mode, when `event_id` or `source_id` is supplied.
 
         cursor : typing.Optional[str]
             Opaque cursor from a previous response's `pagination.nextCursor` in the SDKs (raw JSON: `pagination.next_cursor`). Must be used with the same filter set — a cursor from `include_settled=true` cannot be replayed against `include_settled=false` and will return `400`.
@@ -804,40 +770,19 @@ class AsyncPredictorSDK:
 
             A venue can keep quoting a market for months after the game (a 94-day-old row was still `status: open` with a live two-sided book when this was written), so the endpoint filters on the game date it already holds — the trailing date of the canonical `event_id` — rather than on an upstream status it cannot verify. Nothing is reported as settled that the venue has not settled; these events are simply not *current*, which is what the default page is for.
 
-            Because it selects the population, a lookup (`?event_id=`, `?polymarket_market_slug=`, `?alpha_arcade_market_id=`, …) for a past-dated event answers `200` with an empty `markets` object unless this is `true`.
+            Because it selects the population, a lookup (`?event_id=` or `?source_id=`) for a past-dated event answers `200` with an empty `canonical_events` object unless this is `true`.
 
         player_prop_match : typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch]
-            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the compact moneyline bridge. Historical snapshots without verified player identity do not expose props.
+            Player-prop admission policy. Explicit use requires `include_submarkets=true`; otherwise returns 400. `strict` (the default) includes only groups of at least two distinct providers with verified player/game/stat/threshold/side identity and a completely reviewed equivalent settlement profile. `same_prop` retains exact prop identity but also admits different or unverified settlement rules, identified by `settlement_equivalence` and `rule_comparisons`. Unknown rules never prove equivalence. Applies in list and lookup mode, including `include_settled`; cursors cannot be reused between policies. Does not change game-line matching or the default moneyline projection. Historical snapshots without verified player identity do not expose props.
 
         include_submarkets : typing.Optional[bool]
-            When `true`, add `canonical_events` with normalized event, submarket, line, segment, outcome, and exact source market/outcome identity. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Defaults to `false` so the compact Dome-compatible response is unchanged. Explicit `player_prop_match` requires this to be `true`.
+            When `true`, each event lists every matched submarket (spreads, totals, period lines and player props) instead of only its full-game moneyline. Every submarket has the same shape, so code written against the default reads the rest unchanged. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Explicit `player_prop_match` requires this to be `true`.
 
         event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Provide the parameter multiple times for multiple events, up to 100 unique keys. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+            Canonical event key(s) to look up directly (for example, `nba-okc-sas-2026-10-20`). Repeat the parameter for several events, and combine it freely with `source_id`, up to 100 unique identifiers in all. Lookup mode — pagination parameters are ignored. A provider identifier here is a `400`; send it as `source_id`.
 
-        kalshi_event_ticker : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Kalshi event ticker(s) to find matching markets for (e.g. `KXNBAGAME-26OCT20OKCSAS`). Provide the parameter multiple times for multiple tickers, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        polymarket_market_slug : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Polymarket market slug(s) to find matching markets for (e.g. `nfl-pit-ne-2026-09-20`). Provide the parameter multiple times for multiple slugs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        predict_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Predict market ID(s) to find matching markets for (e.g. `1607914`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        sxbet_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            SX Bet market ID(s) to find matching markets for (e.g. `0xb4d047a709aae881e5ccad9d123592967644ee1df1f17078c762b388e41b81c5`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        alpha_arcade_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            AlphaArcade market ULID(s) to find matching markets for. Use `market_id` from an `ALPHA-ARCADE` row in a current matching list response; game-scoped IDs can disappear when the venue delists the game. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        prophetx_event_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            ProphetX event ID(s) to find matching markets for (e.g. `1700008782`). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        prophetx_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            ProphetX market ID(s) to find matching markets for (e.g. `1700008782:219`, resolving the favourite primary-line strike). Accepts a market ID or an event ID (mirroring how `kalshi_event_ticker` accepts market tickers). Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
-
-        pred_market_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Pred market ID(s) to find matching markets for, in native form (no `pred:` prefix): the `<parent_market_id>:<child_market_id>` pair a `PRED` row publishes as `market_id`, or a bare parent market ID — the row's `event_id`, which Pred itself calls `parent_market_id` and `GET /v1/markets/pred:<parent>` also accepts. Both halves are `0x` + 64 hex. Provide the parameter multiple times for multiple IDs, up to 100 unique values. Only one filter type may be used per request. Lookup mode — pagination parameters are ignored.
+        source_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `canonical_events[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx` or `pred`; anything else is a `400`. Each matched event is keyed by the identifier exactly as sent (surrounding whitespace trimmed), so the keys of the response are the identifiers that matched. Repeat the parameter for several identifiers, across providers; combined with `event_id`, up to 100 unique identifiers in all. Lookup mode — pagination parameters are ignored. A lookup finds the event an identifier belongs to; set `include_submarkets=true` to see the submarket it names when that is not the moneyline.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -845,7 +790,7 @@ class AsyncPredictorSDK:
         Returns
         -------
         SportsMatchingResponse
-            Matching markets keyed by identifier
+            Matched canonical events keyed by identifier
 
         Examples
         --------
@@ -871,14 +816,7 @@ class AsyncPredictorSDK:
             player_prop_match=player_prop_match,
             include_submarkets=include_submarkets,
             event_id=event_id,
-            kalshi_event_ticker=kalshi_event_ticker,
-            polymarket_market_slug=polymarket_market_slug,
-            predict_market_id=predict_market_id,
-            sxbet_market_id=sxbet_market_id,
-            alpha_arcade_market_id=alpha_arcade_market_id,
-            prophetx_event_id=prophetx_event_id,
-            prophetx_market_id=prophetx_market_id,
-            pred_market_id=pred_market_id,
+            source_id=source_id,
             request_options=request_options,
         )
         return _response.data
@@ -1003,7 +941,7 @@ class AsyncPredictorSDK:
 
         **What the pricing tier is for, and what it is not.** It reports the top of each venue's book, once, at the moment of your request. That is enough to see where a market is quoted, to compare venues, and to decide where to go and look harder. It is NOT an execution feed: there is no depth beyond the best level, no streaming, no per-outcome book on the platforms that publish only a market-wide mark, and nothing here is reserved for you — by the time you act, the level may be gone. Two limits are worth knowing before you write a strategy against it. First, `price` is a derived display number and a non-null `price` does not imply a tradeable one; read `pricing.availability` and prefer `bid`/`ask` for anything you intend to act on. Second, quote freshness is a property of the venue, not of this API — see *Bounding quote freshness* below. Route the actual order through the venue's own book.
 
-        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`as_of_kind`/`observed_at`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet, Hyperliquid, and AlphaArcade carry no pricing on the market record, so the server makes one bounded second fetch to the order book (`pricing.source=orderbook`) — SX Bet's best-odds endpoint, Hyperliquid's merged `l2Book`, or AlphaArcade's `get-full-orderbook` (a 4-sided YES/NO book; the second side's quotes are derived from the first by the cross-side complement, and the catalog midpoint serves as the price mark when the book is empty — reported as `pricing.availability=indicative`, since a mark that outlives its book is not a quote). On a book error the lookup still succeeds with identity intact and `pricing.availability` reflecting the marks. On timeout/error it degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Predict publishes a per-market `spreadThreshold` — the widest bid/ask spread it counts as liquidity — and this route honours it, so a Predict book outside its own market's threshold reports `indicative` rather than lending its midpoint the authority of `live`. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
+        The pricing tier adds per-outcome quotes (`price`/`bid`/`ask`/ `last` as 0–1 probability numbers — price IS the implied probability), a `pricing` envelope (`availability`/`scale`/ `source`/`as_of`/`as_of_kind`/`observed_at`/`neg_risk`), and market-level aggregates (`liquidity_usd`, `volume_24h_usd`, `volume_total_usd`, plus Kalshi contract-count mirrors and `open_interest`). Kalshi/ Polymarket/Predict quotes come from the same record the identity fetch returns (`pricing.source=market_record`). SX Bet, Hyperliquid, and AlphaArcade carry no pricing on the market record, so the server makes one bounded second fetch to the order book (`pricing.source=orderbook`) — SX Bet's `/orderbook-v3/snapshot`, Hyperliquid's merged `l2Book`, or AlphaArcade's `get-full-orderbook` (a 4-sided YES/NO book; the second side's quotes are derived from the first by the cross-side complement, and the catalog midpoint serves as the price mark when the book is empty — reported as `pricing.availability=indicative`, since a mark that outlives its book is not a quote). On a book error the lookup still succeeds with identity intact and `pricing.availability` reflecting the marks. On timeout/error it degrades to `pricing.availability=unavailable` with identity intact — pricing failures never fail the lookup. Predict publishes a per-market `spreadThreshold` — the widest bid/ask spread it counts as liquidity — and this route honours it, so a Predict book outside its own market's threshold reports `indicative` rather than lending its midpoint the authority of `live`. Aggregates a platform doesn't natively expose are explicit `null` (e.g. Kalshi reports volume in contracts, so `volume_*_usd` stays null rather than fabricating a USD figure; its upstream `liquidity_dollars` field is deprecated and always zero, so `liquidity_usd` is null too).
 
         **Bounding quote freshness.** `pricing.as_of` is the provider's own timestamp and does not mean the same thing on every platform — on Hyperliquid it moves with the order book, while on Kalshi it is a record write measured anywhere from 15 hours to 137 days old on markets reporting `status: open` with a live two-sided book. `pricing.as_of_kind` names which one you received (`quote` / `record_refresh` / `record_static` / `unknown`), so read it before applying an age bound to `as_of`; only `quote` tracks the quote closely enough to bound at all. `pricing.observed_at` is when this server read the quotes, means the same thing on every provider, and is therefore the field to bound when you need one threshold that behaves identically across platforms. It bounds the age of the read, not of the quote: this route reads the venue live per request and caches nothing, so on a `record_static` provider a fresh `observed_at` beside a day-old `as_of` is the honest description of what the venue served, and the executable price should come from that venue's own book.
 
@@ -1261,9 +1199,9 @@ class AsyncPredictorSDK:
         event_id : str
             Platform-native event identifier. Examples per platform: Kalshi event ticker (`KXNBAGAME-26OCT20OKCSAS`), Polymarket event slug (`nfl-pit-ne-2026-09-20`), SX Bet event id (`L19766755`), Predict market id (`1607914`), Hyperliquid question or outcome integer id (requires `?platform=hyperliquid` since integer ids aren't inferred), Pred parent market id (`0x…64hex`, requires `?platform=pred` since the shape collides with SX Bet market hashes). The composite `{provider}:{native_id}` form (e.g. `predict:1607914`) is accepted here too and dispatches without probing.
 
-            **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every row of `GET /v1/matching-markets/sports` carries the `platform` that goes with its `event_id`.
+            **A bare numeric id or slug is not unique across platforms.** Polymarket and Predict both use these shapes and their id spaces overlap, so sending one without a platform can fail with `409` (see that response). Pass `?platform=` — every source market in `GET /v1/matching-markets/sports` carries the `provider` that goes with its `event_id`.
 
-            **Sports identifiers expire.** Game tickers and slugs are delisted once an event settles, and Hyperliquid ids roll over daily. Take current ones from `GET /v1/matching-markets/sports` (every platform row carries its provider-native `event_id`) rather than copying one out of this reference.
+            **Sports identifiers expire.** Game tickers and slugs are delisted once an event settles, and Hyperliquid ids roll over daily. Take current ones from `GET /v1/matching-markets/sports` (every source market carries its provider's `event_id`) rather than copying one out of this reference.
 
         platform : typing.Optional[GetEventRequestPlatform]
             Optional platform override. When omitted, inferred from the `event_id` format: `KX…` → Kalshi, `L\\d+` → SX Bet. Numeric IDs and kebab-case slugs are shared shape between Polymarket and Predict; in that case the service probes both and returns `409` rather than guessing if the identifier resolves on both. Hyperliquid question/outcome integer ids collide with these numerics and are not inferred — pass `?platform=hyperliquid` (alias `hl`). Pred parent ids share the `0x…64hex` shape with SX Bet market hashes and are not inferred either — pass `?platform=pred`. Passing `platform` explicitly skips the probe entirely and is the recommended call whenever you know it. Supplying a value that contradicts a composite `{provider}:` prefix is a `400`.

@@ -6,24 +6,18 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .canonical_sports_event import CanonicalSportsEvent
 from .pagination_block import PaginationBlock
-from .platform_market import PlatformMarket
 from .sports_matching_snapshot import SportsMatchingSnapshot
 
 
 class SportsMatchingResponse(UniversalBaseModel):
-    markets: typing.Dict[str, typing.List[PlatformMarket]] = pydantic.Field()
+    canonical_events: typing.Dict[str, CanonicalSportsEvent] = pydantic.Field()
     """
-    Key-value pairs where each key is the queried identifier (Kalshi event ticker, Polymarket slug, or canonical event ID when no filter is provided) and each value is an array of platform market objects.
-    """
-
-    canonical_events: typing.Optional[typing.Dict[str, CanonicalSportsEvent]] = pydantic.Field(default=None)
-    """
-    Opt-in canonical identity map, present only when `include_submarkets=true`. Keys match the `markets` response keys; each value contains the canonical event ID and every normalized submarket/source mapping for that event.
+    Matched events. Keyed by canonical event ID in list mode, and in lookup mode by each `event_id` or `source_id` exactly as sent (surrounding whitespace trimmed), so an identifier that matched nothing is simply absent. Present on every response, as `{}` when nothing matched.
     """
 
     pagination: typing.Optional[PaginationBlock] = pydantic.Field(default=None)
     """
-    Pagination metadata for the current page. Present in list mode (no platform-ID filter). Absent in lookup mode since the response is bounded by the filter.
+    Pagination metadata for the current page. Present in list mode (no `event_id` or `source_id`). Absent in lookup mode, since the response is bounded by the identifiers requested.
     """
 
     snapshot: SportsMatchingSnapshot = pydantic.Field()

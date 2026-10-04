@@ -56,8 +56,6 @@ if typing.TYPE_CHECKING:
     from .payment_required_error_body import PaymentRequiredErrorBody
     from .plan import Plan
     from .plans_response import PlansResponse
-    from .platform_market import PlatformMarket
-    from .platform_market_platform import PlatformMarketPlatform
     from .player_prop_rule_comparison import PlayerPropRuleComparison
     from .player_prop_rule_comparison_comparison import PlayerPropRuleComparisonComparison
     from .player_prop_rule_comparison_rule import PlayerPropRuleComparisonRule
@@ -120,8 +118,6 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PaymentRequiredErrorBody": ".payment_required_error_body",
     "Plan": ".plan",
     "PlansResponse": ".plans_response",
-    "PlatformMarket": ".platform_market",
-    "PlatformMarketPlatform": ".platform_market_platform",
     "PlayerPropRuleComparison": ".player_prop_rule_comparison",
     "PlayerPropRuleComparisonComparison": ".player_prop_rule_comparison_comparison",
     "PlayerPropRuleComparisonRule": ".player_prop_rule_comparison_rule",
@@ -208,8 +204,6 @@ __all__ = [
     "PaymentRequiredErrorBody",
     "Plan",
     "PlansResponse",
-    "PlatformMarket",
-    "PlatformMarketPlatform",
     "PlayerPropRuleComparison",
     "PlayerPropRuleComparisonComparison",
     "PlayerPropRuleComparisonRule",
