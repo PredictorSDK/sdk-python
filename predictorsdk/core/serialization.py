@@ -74,6 +74,13 @@ def _requires_conversion(type_: typing.Any) -> bool:
 def _compute_requires_conversion(type_: typing.Any, seen: typing.Set[typing.Any]) -> bool:
     clean_type = _remove_annotations(type_)
 
+    # A ClassVar, such as pydantic's `model_config`, is never instance data,
+    # so it never needs converting. Walking into it reaches pydantic's
+    # ConfigDict, whose `X | None` annotations Python 3.8 and 3.9 cannot
+    # evaluate.
+    if typing_extensions.get_origin(clean_type) is typing.ClassVar:
+        return False
+
     try:
         if clean_type in seen:
             return False

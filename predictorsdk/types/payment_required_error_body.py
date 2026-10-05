@@ -12,22 +12,26 @@ class PaymentRequiredErrorBody(UniversalBaseModel):
     Error body returned with HTTP 402. The `action` discriminator lets clients route to the correct recovery flow: `upgrade_plan` means the caller is on a lower tier than the endpoint requires, or the Free monthly allowance is exhausted; `resolve_payment` means the caller had a paid subscription that entered a payment-recovery state (past_due/unpaid/paused/incomplete) and the backend has already downgraded them to Free — the fix is in the billing portal, not a new purchase. `required_tier` / `current_tier` are always populated; `included_requests_per_month` and `current_period_requests` are only set when a Free caller hits the monthly allowance.
     """
 
-    error: str
-    message: typing.Optional[str] = pydantic.Field(default=None)
+    code: str = pydantic.Field()
     """
-    Additional detail about the error.
+    Always `payment_required`.
+    """
+
+    message: str = pydantic.Field()
+    """
+    What the caller needs to do, for people.
     """
 
     status_code: int
     action: PaymentRequiredErrorAction
     required_tier: str = pydantic.Field()
     """
-    Billing tier that would satisfy the gate (e.g. `starter`, `pro`, `business`, `enterprise`).
+    Billing tier that would satisfy the gate: `starter`, `pro` or `enterprise`, the `billing_tier` of a plan in `GET /v1/plans` (the Business plan's tier is `enterprise`).
     """
 
     current_tier: str = pydantic.Field()
     """
-    Billing tier currently associated with the caller.
+    Billing tier currently associated with the caller: `free`, `starter`, `pro` or `enterprise`.
     """
 
     included_requests_per_month: typing.Optional[int] = pydantic.Field(default=None)

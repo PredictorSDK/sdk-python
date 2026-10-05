@@ -144,8 +144,9 @@ def _retry_timeout(response: httpx.Response, retries: int) -> float:
     if retry_after is not None and retry_after > 0:
         return min(retry_after, MAX_RETRY_DELAY_SECONDS)
 
-    # 2. Check X-RateLimit-Reset header (with positive jitter)
-    ratelimit_reset = _parse_x_ratelimit_reset(response.headers)
+    # 2. Check X-RateLimit-Reset header (with positive jitter). It times the
+    # rate-limit window, so it paces a 429 only.
+    ratelimit_reset = _parse_x_ratelimit_reset(response.headers) if response.status_code == 429 else None
     if ratelimit_reset is not None:
         return min(_add_positive_jitter(min(ratelimit_reset, MAX_RETRY_DELAY_SECONDS)), MAX_RETRY_DELAY_SECONDS)
 
@@ -161,7 +162,9 @@ def _retry_timeout_from_retries(retries: int) -> float:
 
 
 def _should_retry(response: httpx.Response) -> bool:
-    return response.status_code >= 500 or response.status_code in [429, 408, 409]
+    # A 409 names an ambiguous identifier, which the same request answers
+    # again: the caller retries with a platform instead.
+    return response.status_code >= 500 or response.status_code in [429, 408]
 
 
 _SENSITIVE_HEADERS = frozenset(

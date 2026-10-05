@@ -4,16 +4,38 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .error_param_problem import ErrorParamProblem
 
 
 class ErrorResponse(UniversalBaseModel):
-    error: str
-    message: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Additional detail about the error. May be present, including on some validation errors.
+    The body of every error this API returns. Branch on `code`, which is stable; show `message`, which is written for people and may change. A `409` adds `candidates` (see `AmbiguousIdentifierError`) and a `402` adds the billing members of `PaymentRequiredError`.
     """
 
-    status_code: int
+    code: str = pydantic.Field()
+    """
+    Stable machine-readable reason. New codes may be added; a code is never renamed or reused. `400`: `unknown_parameter` (the endpoint does not read that query parameter), `invalid_parameter` (a value is malformed, empty, out of range, sent more than once, or contradicts another parameter), `missing_parameter`, `invalid_cursor` (a cursor or `pagination_key` that is malformed, stale, or from another endpoint or filter set: start again without it), `invalid_identifier` (a `market_id` or `event_id` that cannot exist on the platform it resolves to, or whose `{provider}:` prefix names no provider), `upstream_rejected` (the venue rejected the request). `401`: `missing_api_key`, `invalid_api_key`. `402`: `payment_required`. `403`: `forbidden`. `404`: `route_not_found` (no route matches the path), `market_not_found`, `event_not_found`, `profile_not_found`. `405`: `method_not_allowed`. `409`: `ambiguous_identifier`. `429`: `rate_limited` (the per-minute limit; honour `Retry-After`), `usage_limit_exceeded` (an allowance that does not refill within the minute), `upstream_rate_limited` (the venue's limit). `502`: `upstream_unavailable`. `503`: `service_unavailable`.
+    """
+
+    message: str = pydantic.Field()
+    """
+    What went wrong and how to fix it, for people. It quotes the offending value where there is one.
+    """
+
+    status_code: int = pydantic.Field()
+    """
+    The HTTP status code, repeated for logs that keep only the body.
+    """
+
+    param: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The query or path parameter the error concerns, when there is one (`provider`, `source_id`, `market_id`, …).
+    """
+
+    errors: typing.Optional[typing.List[ErrorParamProblem]] = pydantic.Field(default=None)
+    """
+    Every problem, when a request has more than one: a lookup batch with several bad identifiers, or several malformed parameters. `message` describes the first; each entry here names its own parameter and value.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

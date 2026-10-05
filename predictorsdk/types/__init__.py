@@ -21,6 +21,7 @@ if typing.TYPE_CHECKING:
     from .category_info import CategoryInfo
     from .crypto_price_item import CryptoPriceItem
     from .crypto_prices_response import CryptoPricesResponse
+    from .error_param_problem import ErrorParamProblem
     from .error_response import ErrorResponse
     from .event_fanout import EventFanout
     from .event_market import EventMarket
@@ -84,6 +85,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CategoryInfo": ".category_info",
     "CryptoPriceItem": ".crypto_price_item",
     "CryptoPricesResponse": ".crypto_prices_response",
+    "ErrorParamProblem": ".error_param_problem",
     "ErrorResponse": ".error_response",
     "EventFanout": ".event_fanout",
     "EventMarket": ".event_market",
@@ -171,6 +173,7 @@ __all__ = [
     "CategoryInfo",
     "CryptoPriceItem",
     "CryptoPricesResponse",
+    "ErrorParamProblem",
     "ErrorResponse",
     "EventFanout",
     "EventMarket",

@@ -14,7 +14,7 @@ class MarketDetailOutcome(UniversalBaseModel):
 
     outcome_id: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Stable per-platform key for this outcome: Kalshi `yes`/`no`, Polymarket CLOB token id, Predict on-chain id, SX Bet `outcomeOne`/`outcomeTwo`, Hyperliquid coin encoding (`#<10*outcome+side>`). The join key for future per-outcome sub-resources (order-book depth).
+    Stable per-platform key for this outcome: Kalshi, Limitless and Pred `yes`/`no`; Polymarket CLOB token id; Predict on-chain id; SX Bet `outcomeOne`/`outcomeTwo`; Hyperliquid coin encoding (`#<10*outcome+side>`); ProphetX's market-scoped selection id (`4`, `5`); AlphaArcade the CLOB token id of the Polymarket market it mirrors. On a market that groups several options (see `outcomes`) it is the option's composite market id, such as `alpha-arcade:01K0HQE3CEM2T2RDRWSCJ3V647`. It is the id `/v1/matching-markets/sports` publishes for the same side, and the join key for future per-outcome sub-resources (order-book depth). Omitted only where the venue publishes no key for a side: the two sides of an AlphaArcade market that mirrors no Polymarket market (21 of 993 two-sided AlphaArcade markets on 2026-10-04, none of them sports).
     """
 
     price: typing.Optional[float] = pydantic.Field(default=None)

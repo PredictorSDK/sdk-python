@@ -13,14 +13,19 @@ class AmbiguousIdentifierError(UniversalBaseModel):
     `candidates` lists exactly the platforms the identifier resolved on, in a stable order, and every entry is a legal `?platform=` value. Retry the same identifier with `?platform={candidate}`, or with the composite `{platform}:{id}` form, and the lookup is deterministic. Clients that fan out over identifiers should handle 409 by re-issuing with the platform they already know from the listing that produced the id — every list and matching response that emits an identifier also emits its platform.
     """
 
-    error: str = pydantic.Field()
+    code: str = pydantic.Field()
     """
-    Short machine-stable reason, e.g. `ambiguous market_id`.
+    Always `ambiguous_identifier`.
     """
 
-    message: typing.Optional[str] = pydantic.Field(default=None)
+    message: str = pydantic.Field()
     """
     Human-readable detail naming the identifier, the platforms it resolved on, and how to disambiguate.
+    """
+
+    param: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The parameter holding the identifier, `market_id` or `event_id`.
     """
 
     candidates: typing.List[str] = pydantic.Field()
