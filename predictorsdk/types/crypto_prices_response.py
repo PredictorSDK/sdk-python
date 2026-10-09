@@ -5,18 +5,18 @@ import typing
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .crypto_price_item import CryptoPriceItem
+from .pagination_block import PaginationBlock
 
 
 class CryptoPricesResponse(UniversalBaseModel):
-    prices: typing.List[CryptoPriceItem]
-    pagination_key: typing.Optional[str] = pydantic.Field(default=None)
+    data: typing.List[CryptoPriceItem] = pydantic.Field()
     """
-    Base64-encoded cursor for fetching the next page. Absent when there are no more results.
+    One page of prices, newest first, one per second. A single item when no time range was sent; `[]` for an unknown symbol.
     """
 
-    total: typing.Optional[int] = pydantic.Field(default=None)
+    pagination: PaginationBlock = pydantic.Field()
     """
-    Number of prices in this response page. Omitted on empty responses for unknown symbols.
+    Pagination metadata for the current page. `total` is always `null` on this route, and `next_cursor` goes back as `cursor`.
     """
 
     if IS_PYDANTIC_V2:

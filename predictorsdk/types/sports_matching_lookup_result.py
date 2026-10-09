@@ -6,14 +6,14 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
-class SportsMatchingLookup(UniversalBaseModel):
+class SportsMatchingLookupResult(UniversalBaseModel):
     """
     What one lookup identifier found.
     """
 
     event_ids: typing.List[str] = pydantic.Field()
     """
-    The `event_id`s of the canonical events in `data` that hold the identifier, matched case-insensitively. Usually one; several only when venues reuse an identifier; none when no event in the selected population holds it: the market is matched by no other venue, the game is past-dated (see `include_settled`), its full-game moneyline is unmatched under `include_submarkets=false`, the game's only matches are player props the `player_prop_match` policy excludes (try `same_prop`), or the identifier is unknown.
+    The `event_id`s of the canonical events in `data` that hold the identifier, matched case-insensitively. Usually one; several only when venues reuse an identifier; none when no event in the selected population holds it: the market is matched by no other venue, the game is past-dated or was cancelled (see `include_settled`), its full-game moneyline is unmatched under `include_submarkets=false`, the game's only matches are player props the `player_prop_match` policy excludes (try `same_prop`), or the identifier is unknown.
     """
 
     if IS_PYDANTIC_V2:

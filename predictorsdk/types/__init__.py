@@ -26,11 +26,15 @@ if typing.TYPE_CHECKING:
     from .event_fanout import EventFanout
     from .event_market import EventMarket
     from .event_response import EventResponse
-    from .event_response_platform import EventResponsePlatform
-    from .get_event_request_platform import GetEventRequestPlatform
-    from .get_market_request_platform import GetMarketRequestPlatform
+    from .event_response_provider import EventResponseProvider
+    from .get_event_request_provider import GetEventRequestProvider
+    from .get_market_request_provider import GetMarketRequestProvider
     from .get_markets_request_provider import GetMarketsRequestProvider
+    from .get_sports_matching_markets_request_league import GetSportsMatchingMarketsRequestLeague
     from .get_sports_matching_markets_request_player_prop_match import GetSportsMatchingMarketsRequestPlayerPropMatch
+    from .lookup_sports_matching_markets_request_player_prop_match import (
+        LookupSportsMatchingMarketsRequestPlayerPropMatch,
+    )
     from .market_category import MarketCategory
     from .market_detail_fee_leg import MarketDetailFeeLeg
     from .market_detail_fee_leg_model import MarketDetailFeeLegModel
@@ -64,8 +68,9 @@ if typing.TYPE_CHECKING:
     from .polymarket_position import PolymarketPosition
     from .polymarket_positions_response import PolymarketPositionsResponse
     from .polymarket_wallet_response import PolymarketWalletResponse
-    from .sports_matching_lookup import SportsMatchingLookup
-    from .sports_matching_response import SportsMatchingResponse
+    from .sports_matching_list_response import SportsMatchingListResponse
+    from .sports_matching_lookup_response import SportsMatchingLookupResponse
+    from .sports_matching_lookup_result import SportsMatchingLookupResult
     from .sports_matching_snapshot import SportsMatchingSnapshot
     from .unified_market import UnifiedMarket
     from .unified_market_provider import UnifiedMarketProvider
@@ -90,11 +95,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "EventFanout": ".event_fanout",
     "EventMarket": ".event_market",
     "EventResponse": ".event_response",
-    "EventResponsePlatform": ".event_response_platform",
-    "GetEventRequestPlatform": ".get_event_request_platform",
-    "GetMarketRequestPlatform": ".get_market_request_platform",
+    "EventResponseProvider": ".event_response_provider",
+    "GetEventRequestProvider": ".get_event_request_provider",
+    "GetMarketRequestProvider": ".get_market_request_provider",
     "GetMarketsRequestProvider": ".get_markets_request_provider",
+    "GetSportsMatchingMarketsRequestLeague": ".get_sports_matching_markets_request_league",
     "GetSportsMatchingMarketsRequestPlayerPropMatch": ".get_sports_matching_markets_request_player_prop_match",
+    "LookupSportsMatchingMarketsRequestPlayerPropMatch": ".lookup_sports_matching_markets_request_player_prop_match",
     "MarketCategory": ".market_category",
     "MarketDetailFeeLeg": ".market_detail_fee_leg",
     "MarketDetailFeeLegModel": ".market_detail_fee_leg_model",
@@ -128,8 +135,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PolymarketPosition": ".polymarket_position",
     "PolymarketPositionsResponse": ".polymarket_positions_response",
     "PolymarketWalletResponse": ".polymarket_wallet_response",
-    "SportsMatchingLookup": ".sports_matching_lookup",
-    "SportsMatchingResponse": ".sports_matching_response",
+    "SportsMatchingListResponse": ".sports_matching_list_response",
+    "SportsMatchingLookupResponse": ".sports_matching_lookup_response",
+    "SportsMatchingLookupResult": ".sports_matching_lookup_result",
     "SportsMatchingSnapshot": ".sports_matching_snapshot",
     "UnifiedMarket": ".unified_market",
     "UnifiedMarketProvider": ".unified_market_provider",
@@ -178,11 +186,13 @@ __all__ = [
     "EventFanout",
     "EventMarket",
     "EventResponse",
-    "EventResponsePlatform",
-    "GetEventRequestPlatform",
-    "GetMarketRequestPlatform",
+    "EventResponseProvider",
+    "GetEventRequestProvider",
+    "GetMarketRequestProvider",
     "GetMarketsRequestProvider",
+    "GetSportsMatchingMarketsRequestLeague",
     "GetSportsMatchingMarketsRequestPlayerPropMatch",
+    "LookupSportsMatchingMarketsRequestPlayerPropMatch",
     "MarketCategory",
     "MarketDetailFeeLeg",
     "MarketDetailFeeLegModel",
@@ -216,8 +226,9 @@ __all__ = [
     "PolymarketPosition",
     "PolymarketPositionsResponse",
     "PolymarketWalletResponse",
-    "SportsMatchingLookup",
-    "SportsMatchingResponse",
+    "SportsMatchingListResponse",
+    "SportsMatchingLookupResponse",
+    "SportsMatchingLookupResult",
     "SportsMatchingSnapshot",
     "UnifiedMarket",
     "UnifiedMarketProvider",

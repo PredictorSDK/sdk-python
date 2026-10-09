@@ -17,9 +17,11 @@ client = PredictorSDK(token="your-api-key")
 
 plans = client.get_plans()
 categories = client.get_categories()
+# Paginated calls return a pager: `markets.items` is the first page, and
+# `for market in markets:` walks every page.
 markets = client.get_markets(limit=10, category="sports")
 
-print(plans.data, categories.data, markets.data)
+print(plans.data, categories.data, markets.items)
 ```
 
 ## Documentation

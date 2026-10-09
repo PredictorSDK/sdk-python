@@ -10,7 +10,7 @@ from .canonical_sports_source_outcome import CanonicalSportsSourceOutcome
 
 class CanonicalSportsSourceMarket(UniversalBaseModel):
     """
-    One venue market matched to a canonical submarket. Every provider uses the same fields: `provider`; the provider's parent `event_id`, for `GET /v1/events/{event_id}`; the market's own `market_id`, for `GET /v1/markets/{market_id}`; and outcomes whose `outcome_id`s are the ones market detail returns, each mapped to a canonical outcome. Send either ID with this market's `provider`, as the composite `{provider}:{id}` or as the `platform` query parameter: a bare Predict ID can also name a Polymarket market, and AlphaArcade, ProphetX and Pred IDs are never inferred. Any of `event_id`, `market_id` or `market_slug`, prefixed with `provider`, finds this event again through `source_id`.
+    One venue market matched to a canonical submarket. Every provider uses the same fields: `provider`; the provider's parent `event_id`, for `GET /v1/events/{event_id}`; the market's own `market_id`, for `GET /v1/markets/{market_id}`; and outcomes whose `outcome_id`s are the ones market detail returns, each mapped to a canonical outcome. Send either ID with this market's `provider`, as the composite `{provider}:{id}` or as the `provider` query parameter: a bare Predict ID can also name a Polymarket market, and AlphaArcade, ProphetX and Pred IDs are never inferred. Any of `event_id`, `market_id` or `market_slug`, prefixed with `provider`, finds this event again through `source_id`.
     """
 
     provider: CanonicalSportsSourceMarketProvider

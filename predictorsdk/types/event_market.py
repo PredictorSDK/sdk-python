@@ -9,7 +9,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class EventMarket(UniversalBaseModel):
     market_id: str = pydantic.Field()
     """
-    Platform-native market identifier. Kalshi ticker (`KXMLBGAME-26AUG272145AZSF-AZ`), Polymarket numeric market id, SX Bet `marketHash`, Predict market id, Hyperliquid outcome id, AlphaArcade market ULID, or ProphetX `<event_id>:<market_id>`.
+    Provider-native market identifier. Kalshi ticker (`KXMLBGAME-26OCT152000MILLAD-MIL`), Polymarket numeric market id, SX Bet `marketHash`, Predict market id, Hyperliquid outcome id, AlphaArcade market ULID, or ProphetX `<event_id>:<market_id>`.
     """
 
     title: str = pydantic.Field()

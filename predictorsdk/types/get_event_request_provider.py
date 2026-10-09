@@ -2,7 +2,7 @@
 
 import typing
 
-EventResponsePlatform = typing.Union[
+GetEventRequestProvider = typing.Union[
     typing.Literal[
         "kalshi", "polymarket", "predict", "sxbet", "hyperliquid", "alpha-arcade", "prophetx", "limitless", "pred"
     ],
