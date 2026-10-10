@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "predictorsdk"
-version = "0.23.1"
+version = "0.24.0"
 description = "The official Python client for the PredictorSDK matching markets API"
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.8"
 authors = [{ name = "PredictorSDK", email = "nick@predictorsdk.com" }]
 keywords = ["predictorsdk", "sports", "betting", "prediction-markets", "kalshi", "polymarket", "sdk"]
@@ -31,6 +32,13 @@ dependencies = [
     "typing_extensions>=4.0.0",
 ]
 
+# The generated client imports httpx_aiohttp when it is installed and uses it
+# for the default async client; without it, DefaultAioHttpClient tells the user
+# to `pip install predictorsdk[aiohttp]` (see predictorsdk/_default_clients.py).
+# httpx-aiohttp brings aiohttp.
+[project.optional-dependencies]
+aiohttp = ["httpx-aiohttp>=0.1.8"]
+
 [project.urls]
 Homepage = "https://docs.predictorsdk.com"
 Repository = "https://github.com/PredictorSDK/sdk-python"
@@ -41,3 +49,6 @@ predictorsdk = ["py.typed"]
 
 [tool.setuptools.packages.find]
 include = ["predictorsdk*"]
+# Fern generates a tests/ directory inside the package; it is not part of the
+# installed client.
+exclude = ["predictorsdk.tests*"]

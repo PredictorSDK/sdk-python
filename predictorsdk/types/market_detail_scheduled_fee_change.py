@@ -10,7 +10,7 @@ from .market_detail_fee_leg import MarketDetailFeeLeg
 
 class MarketDetailScheduledFeeChange(UniversalBaseModel):
     """
-    The next PUBLISHED change to this market's fee parameters and when it takes effect. OMITTED (not null) when there is no pending change, matching `pricing.neg_risk`.
+    The next PUBLISHED change to this market's fee parameters and when it takes effect. OMITTED (not null) when there is no pending change, matching `pricing.neg_risk`. A change is reported only when both of its legs can be stated, so `taker` and `maker` here are never null.
 
     Kalshi is the only platform that publishes this today, and it matters: every MLB series currently runs at a `fee_multiplier` of 0.5 with a per-event override restoring 1.0 at first pitch, so the fee DOUBLES mid-market on a game that is already trading. On a $100 taker order at a price of 0.42 that is 203 bps before the first pitch and 406 bps after — enough to change which venue is cheaper for the same canonical outcome at the same price. Without this field a consumer mis-costs every order placed near a game start with no way to see it coming.
     """
@@ -20,8 +20,8 @@ class MarketDetailScheduledFeeChange(UniversalBaseModel):
     When the new parameters take effect, RFC3339.
     """
 
-    taker: typing.Optional[MarketDetailFeeLeg] = None
-    maker: typing.Optional[MarketDetailFeeLeg] = None
+    taker: MarketDetailFeeLeg
+    maker: MarketDetailFeeLeg
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

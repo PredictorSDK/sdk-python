@@ -2,4 +2,6 @@
 
 import typing
 
-MarketDetailTradingFeesChargeBasis = typing.Union[typing.Literal["fill", "settlement_profit"], typing.Any]
+MarketDetailTradingFeesChargeBasis = typing.Union[
+    typing.Literal["fill", "settlement_profit", "close_or_settlement"], typing.Any
+]
