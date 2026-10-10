@@ -7,6 +7,10 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class PlayerPropRuleSourceValue(UniversalBaseModel):
+    """
+    One source market's value for one rule. Shared by player props and game lines, like `PlayerPropRuleComparison`.
+    """
+
     provider: str = pydantic.Field()
     """
     Lowercase provider slug matching a source_markets entry.
@@ -19,7 +23,7 @@ class PlayerPropRuleSourceValue(UniversalBaseModel):
 
     value: str = pydantic.Field()
     """
-    Machine-readable observed rule value, or `unknown`. Values are extensible; clients must tolerate unfamiliar values and read description. Never interpret unknown as no restriction.
+    Machine-readable observed rule value, or `unknown`. Values are extensible; clients must tolerate unfamiliar values and read description. Never interpret unknown as no restriction. Game lines use `tie`: `half_payout` (each side is paid half), `void` (stakes returned), `loses` (the named result loses), `separate_outcome` (the venue lists a tie contract of its own), `not_possible` (the contract cannot end level: a league that plays on until one side wins, or a half-point line); `overtime`: `included` or `excluded`; and `push`: `void`, `loses` or `not_applicable` (a moneyline or a half-point line has nothing to land on). Each is `unknown` where the venue's rules do not say.
     """
 
     description: str = pydantic.Field()
@@ -29,7 +33,7 @@ class PlayerPropRuleSourceValue(UniversalBaseModel):
 
     evidence_url: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Source contract containing the observed clause; omitted for unknown rules.
+    Source contract containing the observed clause; omitted for unknown rules. For a game line it is the venue's published rules document (a Kalshi contract-terms PDF, SX Bet's help center, a ProphetX CFTC filing) or the record holding the market's own rules text.
     """
 
     if IS_PYDANTIC_V2:

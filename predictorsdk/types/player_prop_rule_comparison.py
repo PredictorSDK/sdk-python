@@ -10,7 +10,15 @@ from .player_prop_rule_source_value import PlayerPropRuleSourceValue
 
 
 class PlayerPropRuleComparison(UniversalBaseModel):
-    rule: PlayerPropRuleComparisonRule
+    """
+    One rule of a submarket's rule matrix, compared across its venues. The name is historical: player props introduced it, and game lines reuse it with the rules `tie`, `overtime` and `push` instead of a second type, so one model reads both. A player prop carries the nine rules from `non_participation` to `resolution_source`; a moneyline, spread or total carries `tie`, `overtime` and `push`, when the request sent `include_rules=true`.
+    """
+
+    rule: PlayerPropRuleComparisonRule = pydantic.Field()
+    """
+    `overtime` is shared by props and game lines. `tie` and `push` appear on game lines only: `tie` is what the venue does when the game or period ends level, and `push` what it does when the result lands exactly on a whole-number line.
+    """
+
     label: str = pydantic.Field()
     """
     Human-readable name of the rule dimension.

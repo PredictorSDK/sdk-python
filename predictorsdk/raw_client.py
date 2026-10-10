@@ -114,16 +114,21 @@ class RawPredictorSDK:
         include_settled: typing.Optional[bool] = None,
         player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
+        include_rules: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SyncPager[CanonicalSportsEvent, SportsMatchingListResponse]:
         """
-        Lists the sports events that more than one venue has matched, soonest scheduled start first, with cursor-based pagination (default `limit=25`, max `100`). Coverage is NBA, WNBA, NHL, MLB, and NFL; `data[].league` names the league and is the first segment of the canonical `event_id`. Every event has one shape for every venue: it lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. A page covers events whose full-game moneyline is matched, and each carries only that submarket; `include_submarkets=true` adds every other matched submarket, and events matched only on spreads, totals or props.
+        Lists the sports events that more than one venue has matched, soonest scheduled start first, with cursor-based pagination (default `limit=25`, max `100`). Coverage is NBA, WNBA, NHL, MLB, and NFL; `data[].league` names the league and is the first segment of the canonical `event_id`. Every event has one shape for every venue: it lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. A page covers events whose full-game moneyline is matched, and each carries only that submarket; `include_submarkets=true` adds every other matched submarket, and events matched only on spreads, totals, team totals or props.
 
         Each event says when it is scheduled. `scheduled_date` is the game's calendar day in America/New_York and is always present; `scheduled_start` is its start time in UTC when a venue published one, and `null` when the venues published only a date.
 
         Games whose date has passed are excluded unless you ask for them with `include_settled=true`. Narrow the list with `league`, `scheduled_date` and `participant`: each is a membership filter on the same matched set, they compose, and `pagination.total` counts the filtered set rather than every event. To look events up by an identifier you already hold, a canonical `event_id` or a venue's own market, slug, event, outcome token or `conditionId`, use `GET /v1/matching-markets/sports/lookup`: it answers in one call, in full, and says what each identifier found, which a page cannot.
 
         Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
+
+        Every moneyline, spread, total and team total carries `settlement_equivalence`: whether the venues in the submarket settle a tied game, overtime and extra innings, and a line that lands exactly the same way. Send `include_rules=true` to also get the rows behind it, `rule_comparisons`: three rows, `tie`, `overtime` and `push`, with each venue's value, a description and a link to the evidence. They are left out by default because they are most of an event's size. The matrix is published beside the match and never changes which venues are paired: a venue that settles an NFL tie differently from another is still in the submarket, and the matrix says so. A rule nobody has written down is `unknown`, and unknown never means equivalent.
+
+        A team total is a team's own total (`market_type=team_total`, "the Eagles over 24.5 points"), not the game's: its `subject` is the team, its `metric` is `points`, and two venues' lines are one submarket only for the same team, period and line. Today it is matched for the NFL, on Kalshi and Polymarket.
 
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an event a response does not contain as unmatched — an empty page from a snapshot that stopped updating looks exactly like one from a current snapshot.
 
@@ -165,6 +170,9 @@ class RawPredictorSDK:
 
             Such pages are large: on 2026-10-04 a 50-event page with every submarket was about 880 KB (190 KB gzipped), and a 20-event `player_prop_match=same_prop` page about 3 MB. Send `Accept-Encoding: gzip` and a smaller `limit` when you need them.
 
+        include_rules : typing.Optional[bool]
+            When `true`, every moneyline, spread and total also lists `rule_comparisons`: the three rows (`tie`, `overtime` and `push`), each with every source market's value, a description and an evidence link, that sit behind its `settlement_equivalence`. When `false`, the default, a game line carries `settlement_equivalence` alone: the verdict is always there and only the rows are left out. The rows are about 60% of an event's bytes on a busy football slate, so ask for them when you want the evidence. A player prop always carries its own matrix, whatever this is. The flag changes what each event lists and never which events a page returns, so a `cursor` works with either value.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -185,6 +193,7 @@ class RawPredictorSDK:
                 "include_settled": include_settled,
                 "player_prop_match": player_prop_match,
                 "include_submarkets": include_submarkets,
+                "include_rules": include_rules,
             },
             request_options=request_options,
         )
@@ -212,6 +221,7 @@ class RawPredictorSDK:
                         include_settled=include_settled,
                         player_prop_match=player_prop_match,
                         include_submarkets=include_submarkets,
+                        include_rules=include_rules,
                         request_options=request_options,
                     )
                 return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
@@ -309,6 +319,7 @@ class RawPredictorSDK:
         include_settled: typing.Optional[bool] = None,
         player_prop_match: typing.Optional[LookupSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
+        include_rules: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SportsMatchingLookupResponse]:
         """
@@ -320,6 +331,8 @@ class RawPredictorSDK:
 
         Player props use strict settlement-equivalent matching by default; `player_prop_match=same_prop` compares roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. A prop's own identifier finds its game under either policy when the game has another matched submarket, while the prop itself appears only when the policy admits it.
 
+        Every moneyline, spread, total and team total carries `settlement_equivalence`, as on the list route, so a lookup by a Kalshi spread ticker answers whether that spread settles like the same line on another venue. Send `include_rules=true` to also get the `rule_comparisons` rows behind it (`tie`, `overtime` and `push`, with each venue's value and evidence).
+
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an identifier that found nothing as unmatched — a lookup that finds nothing in a snapshot that stopped updating looks exactly like one that finds nothing in a current one.
 
         Parameters
@@ -328,7 +341,7 @@ class RawPredictorSDK:
             Canonical event key(s) to look up (for example, `nba-okc-sas-2026-10-20`), matched case-insensitively. Repeat the parameter for several events (do not comma-join them), and combine it freely with `source_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A venue's own ID here (a Kalshi ticker, a numeric ID, an SX Bet `L…` fixture, an `0x` hash, a ULID or a `{provider}:{id}` composite) is a `400` telling you to send it as `source_id`, and so is an empty value. So is a value that matches no canonical event but is a venue's identifier, most often a Polymarket slug: a night game's slug carries the UTC date (`nfl-sea-den-2026-10-16` for the canonical `nfl-sea-den-2026-10-15`), and Polymarket spells some teams differently (`cal` for Calgary, `la` for the Rams).
 
         source_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `data[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. On Polymarket, Predict and AlphaArcade an outcome token (`outcomes[].outcome_id`) works too, because those tokens identify one market, and on Polymarket so does a market's `conditionId`, the ID wallet positions carry. Elsewhere outcome IDs are side names such as `yes` that repeat in every market: Kalshi's and Pred's `yes`/`no` and SX Bet's `outcomeOne`/`outcomeTwo` are a `400` that points to `market_id`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx` or `pred`; anything else is a `400` naming the value. Matching is case-insensitive. `lookups` reports every identifier under its spelling as sent (whitespace around the provider and ID trimmed), with the canonical events it found. Repeat the parameter for several identifiers, across providers (a comma-joined list or an empty value is a `400`); combined with `event_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A lookup finds the event an identifier belongs to and, by default, returns it in full, so the submarket the identifier names is in it unless `include_submarkets=false`. A player prop finds its game under any `player_prop_match` policy when the game has another matched submarket, while the prop itself appears only when the policy admits it; a game matched only on props the policy excludes is not returned.
+            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `data[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. On Polymarket, Predict and AlphaArcade an outcome token (`outcomes[].outcome_id`) works too, because those tokens identify one market, and on Polymarket so does a market's `conditionId`, the ID wallet positions carry. Elsewhere outcome IDs are side names such as `yes` that repeat in every market: Kalshi's, Pred's and Limitless's `yes`/`no` and SX Bet's `outcomeOne`/`outcomeTwo` are a `400` that points to `market_id`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair, or a Limitless market's slug. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx`, `pred` or `limitless`; anything else is a `400` naming the value. Matching is case-insensitive. `lookups` reports every identifier under its spelling as sent (whitespace around the provider and ID trimmed), with the canonical events it found. Repeat the parameter for several identifiers, across providers (a comma-joined list or an empty value is a `400`); combined with `event_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A lookup finds the event an identifier belongs to and, by default, returns it in full, so the submarket the identifier names is in it unless `include_submarkets=false`. A player prop finds its game under any `player_prop_match` policy when the game has another matched submarket, while the prop itself appears only when the policy admits it; a game matched only on props the policy excludes is not returned.
 
         include_settled : typing.Optional[bool]
             Selects which events the lookup searches. Defaults to `false`: only events whose scheduled start has not certainly passed — today's games, plus a one-day grace so a late start that runs past midnight Eastern is never dropped mid-play. Set it to `true` to also search the settled archive: events that left the live matching run, usually because the venues settled or delisted them. That adds games whose date is further in the past, including ones a venue still lists as open, and games a venue cancelled, which can be future-dated; the default leaves a cancelled game out.
@@ -340,6 +353,9 @@ class RawPredictorSDK:
 
         include_submarkets : typing.Optional[bool]
             When `true`, each event lists every matched submarket (spreads, totals, period lines and player props); when `false`, only its full-game moneyline, and an event appears only when that is matched. Defaults to `true` on a lookup, which returns the events it finds in full: a spread ticker shows its spread. Every submarket has the same shape, so code written against the moneyline reads the rest unchanged. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Explicit `player_prop_match` requires this to be `true`.
+
+        include_rules : typing.Optional[bool]
+            When `true`, every moneyline, spread and total also lists `rule_comparisons`: the three rows (`tie`, `overtime` and `push`), each with every source market's value, a description and an evidence link, that sit behind its `settlement_equivalence`. When `false`, the default, a game line carries `settlement_equivalence` alone: the verdict is always there and only the rows are left out. The rows are about 60% of an event's bytes on a busy football slate, and a lookup returns every submarket, so ask for them when you want the evidence. A player prop always carries its own matrix, whatever this is. The flag changes what each event lists and never which events are found.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -358,6 +374,7 @@ class RawPredictorSDK:
                 "include_settled": include_settled,
                 "player_prop_match": player_prop_match,
                 "include_submarkets": include_submarkets,
+                "include_rules": include_rules,
             },
             request_options=request_options,
         )
@@ -1611,16 +1628,21 @@ class AsyncRawPredictorSDK:
         include_settled: typing.Optional[bool] = None,
         player_prop_match: typing.Optional[GetSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
+        include_rules: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncPager[CanonicalSportsEvent, SportsMatchingListResponse]:
         """
-        Lists the sports events that more than one venue has matched, soonest scheduled start first, with cursor-based pagination (default `limit=25`, max `100`). Coverage is NBA, WNBA, NHL, MLB, and NFL; `data[].league` names the league and is the first segment of the canonical `event_id`. Every event has one shape for every venue: it lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. A page covers events whose full-game moneyline is matched, and each carries only that submarket; `include_submarkets=true` adds every other matched submarket, and events matched only on spreads, totals or props.
+        Lists the sports events that more than one venue has matched, soonest scheduled start first, with cursor-based pagination (default `limit=25`, max `100`). Coverage is NBA, WNBA, NHL, MLB, and NFL; `data[].league` names the league and is the first segment of the canonical `event_id`. Every event has one shape for every venue: it lists its participants and submarkets, and each submarket lists the venue markets matched to it in `source_markets[]`. Every one of those carries the same references: `provider`, the provider's own parent `event_id` for `GET /v1/events/{event_id}`, its `market_id` for `GET /v1/markets/{market_id}`, and outcome IDs mapped to canonical outcomes. A page covers events whose full-game moneyline is matched, and each carries only that submarket; `include_submarkets=true` adds every other matched submarket, and events matched only on spreads, totals, team totals or props.
 
         Each event says when it is scheduled. `scheduled_date` is the game's calendar day in America/New_York and is always present; `scheduled_start` is its start time in UTC when a venue published one, and `null` when the venues published only a date.
 
         Games whose date has passed are excluded unless you ask for them with `include_settled=true`. Narrow the list with `league`, `scheduled_date` and `participant`: each is a membership filter on the same matched set, they compose, and `pagination.total` counts the filtered set rather than every event. To look events up by an identifier you already hold, a canonical `event_id` or a venue's own market, slug, event, outcome token or `conditionId`, use `GET /v1/matching-markets/sports/lookup`: it answers in one call, in full, and says what each identifier found, which a page cannot.
 
         Player props use strict settlement-equivalent matching by default. Set `include_submarkets=true&player_prop_match=same_prop` to compare roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. Each player prop includes a nine-dimension rule matrix. This policy applies only to player props, not game lines; a same-prop match is not a guarantee of identical payouts or a perfect hedge.
+
+        Every moneyline, spread, total and team total carries `settlement_equivalence`: whether the venues in the submarket settle a tied game, overtime and extra innings, and a line that lands exactly the same way. Send `include_rules=true` to also get the rows behind it, `rule_comparisons`: three rows, `tie`, `overtime` and `push`, with each venue's value, a description and a link to the evidence. They are left out by default because they are most of an event's size. The matrix is published beside the match and never changes which venues are paired: a venue that settles an NFL tie differently from another is still in the submarket, and the matrix says so. A rule nobody has written down is `unknown`, and unknown never means equivalent.
+
+        A team total is a team's own total (`market_type=team_total`, "the Eagles over 24.5 points"), not the game's: its `subject` is the team, its `metric` is `points`, and two venues' lines are one submarket only for the same team, period and line. Today it is matched for the NFL, on Kalshi and Polymarket.
 
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an event a response does not contain as unmatched — an empty page from a snapshot that stopped updating looks exactly like one from a current snapshot.
 
@@ -1662,6 +1684,9 @@ class AsyncRawPredictorSDK:
 
             Such pages are large: on 2026-10-04 a 50-event page with every submarket was about 880 KB (190 KB gzipped), and a 20-event `player_prop_match=same_prop` page about 3 MB. Send `Accept-Encoding: gzip` and a smaller `limit` when you need them.
 
+        include_rules : typing.Optional[bool]
+            When `true`, every moneyline, spread and total also lists `rule_comparisons`: the three rows (`tie`, `overtime` and `push`), each with every source market's value, a description and an evidence link, that sit behind its `settlement_equivalence`. When `false`, the default, a game line carries `settlement_equivalence` alone: the verdict is always there and only the rows are left out. The rows are about 60% of an event's bytes on a busy football slate, so ask for them when you want the evidence. A player prop always carries its own matrix, whatever this is. The flag changes what each event lists and never which events a page returns, so a `cursor` works with either value.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1682,6 +1707,7 @@ class AsyncRawPredictorSDK:
                 "include_settled": include_settled,
                 "player_prop_match": player_prop_match,
                 "include_submarkets": include_submarkets,
+                "include_rules": include_rules,
             },
             request_options=request_options,
         )
@@ -1711,6 +1737,7 @@ class AsyncRawPredictorSDK:
                             include_settled=include_settled,
                             player_prop_match=player_prop_match,
                             include_submarkets=include_submarkets,
+                            include_rules=include_rules,
                             request_options=request_options,
                         )
 
@@ -1809,6 +1836,7 @@ class AsyncRawPredictorSDK:
         include_settled: typing.Optional[bool] = None,
         player_prop_match: typing.Optional[LookupSportsMatchingMarketsRequestPlayerPropMatch] = None,
         include_submarkets: typing.Optional[bool] = None,
+        include_rules: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SportsMatchingLookupResponse]:
         """
@@ -1820,6 +1848,8 @@ class AsyncRawPredictorSDK:
 
         Player props use strict settlement-equivalent matching by default; `player_prop_match=same_prop` compares roster-verified props with the same player, game, statistic, full-game period, and threshold even when settlement rules differ or remain unverified. A prop's own identifier finds its game under either policy when the game has another matched submarket, while the prop itself appears only when the policy admits it.
 
+        Every moneyline, spread, total and team total carries `settlement_equivalence`, as on the list route, so a lookup by a Kalshi spread ticker answers whether that spread settles like the same line on another venue. Send `include_rules=true` to also get the `rule_comparisons` rows behind it (`tie`, `overtime` and `push`, with each venue's value and evidence).
+
         Matching runs continuously in the background and this endpoint reads the stored result, so every response carries `snapshot.observed_at`: how old the venue data behind it is. Check it before treating an identifier that found nothing as unmatched — a lookup that finds nothing in a snapshot that stopped updating looks exactly like one that finds nothing in a current one.
 
         Parameters
@@ -1828,7 +1858,7 @@ class AsyncRawPredictorSDK:
             Canonical event key(s) to look up (for example, `nba-okc-sas-2026-10-20`), matched case-insensitively. Repeat the parameter for several events (do not comma-join them), and combine it freely with `source_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A venue's own ID here (a Kalshi ticker, a numeric ID, an SX Bet `L…` fixture, an `0x` hash, a ULID or a `{provider}:{id}` composite) is a `400` telling you to send it as `source_id`, and so is an empty value. So is a value that matches no canonical event but is a venue's identifier, most often a Polymarket slug: a night game's slug carries the UTC date (`nfl-sea-den-2026-10-16` for the canonical `nfl-sea-den-2026-10-15`), and Polymarket spells some teams differently (`cal` for Calgary, `la` for the Rams).
 
         source_id : typing.Optional[typing.Union[str, typing.Sequence[str]]]
-            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `data[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. On Polymarket, Predict and AlphaArcade an outcome token (`outcomes[].outcome_id`) works too, because those tokens identify one market, and on Polymarket so does a market's `conditionId`, the ID wallet positions carry. Elsewhere outcome IDs are side names such as `yes` that repeat in every market: Kalshi's and Pred's `yes`/`no` and SX Bet's `outcomeOne`/`outcomeTwo` are a `400` that points to `market_id`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx` or `pred`; anything else is a `400` naming the value. Matching is case-insensitive. `lookups` reports every identifier under its spelling as sent (whitespace around the provider and ID trimmed), with the canonical events it found. Repeat the parameter for several identifiers, across providers (a comma-joined list or an empty value is a `400`); combined with `event_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A lookup finds the event an identifier belongs to and, by default, returns it in full, so the submarket the identifier names is in it unless `include_submarkets=false`. A player prop finds its game under any `player_prop_match` policy when the game has another matched submarket, while the prop itself appears only when the policy admits it; a game matched only on props the policy excludes is not returned.
+            Venue identifier(s) to look up, as `{provider}:{id}`: any `market_id`, `market_slug` or `event_id` that a `data[].submarkets[].source_markets[]` entry publishes, prefixed with that entry's `provider`. On Polymarket, Predict and AlphaArcade an outcome token (`outcomes[].outcome_id`) works too, because those tokens identify one market, and on Polymarket so does a market's `conditionId`, the ID wallet positions carry. Elsewhere outcome IDs are side names such as `yes` that repeat in every market: Kalshi's, Pred's and Limitless's `yes`/`no` and SX Bet's `outcomeOne`/`outcomeTwo` are a `400` that points to `market_id`. For example `kalshi:KXNBAGAME-26OCT20OKCSAS` (an event ticker), `kalshi:KXNBAGAME-26OCT20OKCSAS-OKC` (a market ticker), `sxbet:L19766755` (a fixture), or Pred's `pred:<parent_market_id>:<child_market_id>` pair, or a Limitless market's slug. Only the text before the first colon is the provider, and it must be one of `kalshi`, `polymarket`, `predict`, `sxbet`, `alpha-arcade`, `prophetx`, `pred` or `limitless`; anything else is a `400` naming the value. Matching is case-insensitive. `lookups` reports every identifier under its spelling as sent (whitespace around the provider and ID trimmed), with the canonical events it found. Repeat the parameter for several identifiers, across providers (a comma-joined list or an empty value is a `400`); combined with `event_id`, up to 100 unique identifiers in all. At least one `event_id` or `source_id` is required. A lookup finds the event an identifier belongs to and, by default, returns it in full, so the submarket the identifier names is in it unless `include_submarkets=false`. A player prop finds its game under any `player_prop_match` policy when the game has another matched submarket, while the prop itself appears only when the policy admits it; a game matched only on props the policy excludes is not returned.
 
         include_settled : typing.Optional[bool]
             Selects which events the lookup searches. Defaults to `false`: only events whose scheduled start has not certainly passed — today's games, plus a one-day grace so a late start that runs past midnight Eastern is never dropped mid-play. Set it to `true` to also search the settled archive: events that left the live matching run, usually because the venues settled or delisted them. That adds games whose date is further in the past, including ones a venue still lists as open, and games a venue cancelled, which can be future-dated; the default leaves a cancelled game out.
@@ -1840,6 +1870,9 @@ class AsyncRawPredictorSDK:
 
         include_submarkets : typing.Optional[bool]
             When `true`, each event lists every matched submarket (spreads, totals, period lines and player props); when `false`, only its full-game moneyline, and an event appears only when that is matched. Defaults to `true` on a lookup, which returns the events it finds in full: a spread ticker shows its spread. Every submarket has the same shape, so code written against the moneyline reads the rest unchanged. This is an identity mapping only; fetch current status, quotes, and liquidity from the referenced market resources. Explicit `player_prop_match` requires this to be `true`.
+
+        include_rules : typing.Optional[bool]
+            When `true`, every moneyline, spread and total also lists `rule_comparisons`: the three rows (`tie`, `overtime` and `push`), each with every source market's value, a description and an evidence link, that sit behind its `settlement_equivalence`. When `false`, the default, a game line carries `settlement_equivalence` alone: the verdict is always there and only the rows are left out. The rows are about 60% of an event's bytes on a busy football slate, and a lookup returns every submarket, so ask for them when you want the evidence. A player prop always carries its own matrix, whatever this is. The flag changes what each event lists and never which events are found.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1858,6 +1891,7 @@ class AsyncRawPredictorSDK:
                 "include_settled": include_settled,
                 "player_prop_match": player_prop_match,
                 "include_submarkets": include_submarkets,
+                "include_rules": include_rules,
             },
             request_options=request_options,
         )

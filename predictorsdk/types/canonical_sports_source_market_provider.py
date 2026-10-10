@@ -3,5 +3,6 @@
 import typing
 
 CanonicalSportsSourceMarketProvider = typing.Union[
-    typing.Literal["kalshi", "polymarket", "predict", "sxbet", "alpha-arcade", "prophetx", "pred"], typing.Any
+    typing.Literal["kalshi", "polymarket", "predict", "sxbet", "alpha-arcade", "prophetx", "pred", "limitless"],
+    typing.Any,
 ]

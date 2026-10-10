@@ -13,6 +13,8 @@ PlayerPropRuleComparisonRule = typing.Union[
         "cancellation",
         "interruption",
         "resolution_source",
+        "tie",
+        "push",
     ],
     typing.Any,
 ]

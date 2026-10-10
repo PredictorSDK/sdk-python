@@ -8,12 +8,12 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 class CanonicalSportsOutcome(UniversalBaseModel):
     """
-    One outcome of a canonical submarket. A moneyline lists the away team first, a spread `cover` before `not_cover`, and a total or player prop `over` before `under`.
+    One outcome of a canonical submarket. A moneyline lists the away team first, a spread `cover` before `not_cover`, and a total, team total or player prop `over` before `under`.
     """
 
     key: str = pydantic.Field()
     """
-    What the outcome pays on: `winner:<participant key>` on a moneyline, `cover:<subject>` and `not_cover:<subject>` on a spread (the subject is the side giving points), and `over` and `under` on a total or a player prop. Each source outcome's `canonical_outcome_key` is one of these.
+    What the outcome pays on: `winner:<participant key>` on a moneyline, `cover:<subject>` and `not_cover:<subject>` on a spread (the subject is the side giving points), and `over` and `under` on a total, a team total (the subject's own points) or a player prop. Each source outcome's `canonical_outcome_key` is one of these.
     """
 
     label: str
