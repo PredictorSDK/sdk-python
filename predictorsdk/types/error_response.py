@@ -3,11 +3,12 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .error_param_problem import ErrorParamProblem
 
 
-class ErrorResponse(UniversalBaseModel):
+class ErrorResponse(UncheckedBaseModel):
     """
     The body of every error this API returns. Branch on `code`, which is stable; show `message`, which is written for people and may change. A `409` adds `candidates` (see `AmbiguousIdentifierError`) and a `402` adds the billing members of `PaymentRequiredError`.
     """

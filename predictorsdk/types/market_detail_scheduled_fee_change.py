@@ -4,11 +4,12 @@ import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_fee_leg import MarketDetailFeeLeg
 
 
-class MarketDetailScheduledFeeChange(UniversalBaseModel):
+class MarketDetailScheduledFeeChange(UncheckedBaseModel):
     """
     The next PUBLISHED change to this market's fee parameters and when it takes effect. OMITTED (not null) when there is no pending change, matching `pricing.neg_risk`. A change is reported only when both of its legs can be stated, so `taker` and `maker` here are never null.
 

@@ -3,12 +3,13 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .crypto_price_item import CryptoPriceItem
 from .pagination_block import PaginationBlock
 
 
-class CryptoPricesResponse(UniversalBaseModel):
+class CryptoPricesResponse(UncheckedBaseModel):
     data: typing.List[CryptoPriceItem] = pydantic.Field()
     """
     One page of prices, newest first, one per second. A single item when no time range was sent; `[]` for an unknown symbol.

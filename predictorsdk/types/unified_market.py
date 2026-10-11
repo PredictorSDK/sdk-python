@@ -3,12 +3,13 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_category import MarketCategory
 from .unified_market_provider import UnifiedMarketProvider
 
 
-class UnifiedMarket(UniversalBaseModel):
+class UnifiedMarket(UncheckedBaseModel):
     id: str = pydantic.Field()
     """
     Composite market identifier in the format `{provider}:{provider_id}` (e.g. `kalshi:AMAZONFTC-29DEC31`).

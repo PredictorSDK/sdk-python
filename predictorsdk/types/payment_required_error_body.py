@@ -3,11 +3,12 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .payment_required_error_action import PaymentRequiredErrorAction
 
 
-class PaymentRequiredErrorBody(UniversalBaseModel):
+class PaymentRequiredErrorBody(UncheckedBaseModel):
     """
     Error body returned with HTTP 402. The `action` discriminator lets clients route to the correct recovery flow: `upgrade_plan` means the caller is on a lower tier than the endpoint requires, or the Free monthly allowance is exhausted; `resolve_payment` means the caller had a paid subscription that entered a payment-recovery state (past_due/unpaid/paused/incomplete) and the backend has already downgraded them to Free — the fix is in the billing portal, not a new purchase. `required_tier` / `current_tier` are always populated; `included_requests_per_month` and `current_period_requests` are only set when a Free caller hits the monthly allowance.
     """

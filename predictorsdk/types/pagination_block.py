@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class PaginationBlock(UniversalBaseModel):
+class PaginationBlock(UncheckedBaseModel):
     limit: int = pydantic.Field()
     """
     Page size this page was served with. It echoes the first-page `limit` query value; for cursor-native passthrough endpoints, a supplied cursor's page size takes precedence on later pages.

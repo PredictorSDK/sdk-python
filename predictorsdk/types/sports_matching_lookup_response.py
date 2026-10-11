@@ -3,13 +3,14 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .canonical_sports_event import CanonicalSportsEvent
 from .sports_matching_lookup_result import SportsMatchingLookupResult
 from .sports_matching_snapshot import SportsMatchingSnapshot
 
 
-class SportsMatchingLookupResponse(UniversalBaseModel):
+class SportsMatchingLookupResponse(UncheckedBaseModel):
     data: typing.List[CanonicalSportsEvent] = pydantic.Field()
     """
     The matched events the identifiers found, soonest scheduled start first, each once however many identifiers found it. Present on every response, as `[]` when nothing matched.

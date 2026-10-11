@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "predictorsdk"
-version = "0.24.0"
+version = "0.25.0"
 description = "The official Python client for the PredictorSDK matching markets API"
 readme = "README.md"
 license = "MIT"
@@ -26,9 +26,13 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
+# pydantic 1.10.8 is the first pydantic 1 release that imports with a current
+# typing_extensions (1.10.0 to 1.10.7 raise `TypeError: issubclass() arg 1 must
+# be a class` on Python 3.9), so it is the floor; pydantic 2 is supported too.
+# Keep sdk/tests/python/requirements.txt aligned with it.
 dependencies = [
     "httpx>=0.21.2",
-    "pydantic>=1.9.2",
+    "pydantic>=1.10.8",
     "typing_extensions>=4.0.0",
 ]
 

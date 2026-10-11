@@ -3,12 +3,13 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .pagination_block import PaginationBlock
 from .polymarket_position import PolymarketPosition
 
 
-class PolymarketPositionsResponse(UniversalBaseModel):
+class PolymarketPositionsResponse(UncheckedBaseModel):
     address: str = pydantic.Field()
     """
     Resolved Polymarket proxy wallet (lowercased).

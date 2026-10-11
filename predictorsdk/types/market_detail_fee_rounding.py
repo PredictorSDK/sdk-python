@@ -3,11 +3,12 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_fee_rounding_direction import MarketDetailFeeRoundingDirection
 
 
-class MarketDetailFeeRounding(UniversalBaseModel):
+class MarketDetailFeeRounding(UncheckedBaseModel):
     """
     The venue's published rounding rule, applied to the computed fee. Null where the venue publishes no rule (Predict) — treat that as UNKNOWN rather than as "no rounding", which would understate small trades.
 

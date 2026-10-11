@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class EventFanout(UniversalBaseModel):
+class EventFanout(UncheckedBaseModel):
     siblings_attempted: typing.List[str] = pydantic.Field()
     """
     Sibling event tickers the server attempted to fetch alongside the primary event. Determined by the Kalshi sibling registry for the primary event's series.

@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class CanonicalSportsSourceOutcome(UniversalBaseModel):
+class CanonicalSportsSourceOutcome(UncheckedBaseModel):
     canonical_outcome_key: str = pydantic.Field()
     """
     Canonical outcome this source-native selection represents: read the team or side it pays on from here, not from `label`.

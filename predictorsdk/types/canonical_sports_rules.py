@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class CanonicalSportsRules(UniversalBaseModel):
+class CanonicalSportsRules(UncheckedBaseModel):
     settlement: typing.Optional[str] = pydantic.Field(default=None)
     """
     Overtime treatment the submarket's key carries: `incl_ot` (the default) or `reg` on a full-game total or team total, and `incl_ot` on a second-half or fourth-quarter spread, total or team total whose venues' own rules count overtime. A half or quarter means regulation play, so a regulation line publishes no `rules`. Kept for compatibility; the `overtime` row of the submarket's `rule_comparisons` (sent with `include_rules=true`) is each venue's own statement of the same rule and never contradicts it.

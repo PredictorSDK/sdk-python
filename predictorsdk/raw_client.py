@@ -10,8 +10,8 @@ from .core.http_response import AsyncHttpResponse, HttpResponse
 from .core.jsonable_encoder import encode_path_param
 from .core.pagination import AsyncPager, SyncPager
 from .core.parse_error import ParsingError
-from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
+from .core.unchecked_base_model import construct_type
 from .errors.bad_gateway_error import BadGatewayError
 from .errors.bad_request_error import BadRequestError
 from .errors.conflict_error import ConflictError
@@ -77,7 +77,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     PlansResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PlansResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -88,7 +88,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -201,7 +201,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     SportsMatchingListResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=SportsMatchingListResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -230,7 +230,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -241,7 +241,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -252,7 +252,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -263,7 +263,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -274,7 +274,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -285,7 +285,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -296,7 +296,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -382,7 +382,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     SportsMatchingLookupResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=SportsMatchingLookupResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -393,7 +393,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -404,7 +404,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -415,7 +415,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -426,7 +426,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -437,7 +437,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -448,7 +448,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -459,7 +459,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -537,7 +537,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     MarketsListResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=MarketsListResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -561,7 +561,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -572,7 +572,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -583,7 +583,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -594,7 +594,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -605,7 +605,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -616,7 +616,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -627,7 +627,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -667,7 +667,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     CategoriesResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=CategoriesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -678,7 +678,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -689,7 +689,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -700,7 +700,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -711,7 +711,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -722,7 +722,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -733,7 +733,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -808,7 +808,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     MarketDetailResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=MarketDetailResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -819,7 +819,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -830,7 +830,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -841,7 +841,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -852,7 +852,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -863,7 +863,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -874,7 +874,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         AmbiguousIdentifierError,
-                        parse_obj_as(
+                        construct_type(
                             type_=AmbiguousIdentifierError,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -885,7 +885,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -896,7 +896,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -907,7 +907,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -976,7 +976,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     CryptoPricesResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=CryptoPricesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1001,7 +1001,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1012,7 +1012,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1023,7 +1023,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1034,7 +1034,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1045,7 +1045,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1056,7 +1056,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1067,7 +1067,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1125,7 +1125,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     PolymarketWalletResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PolymarketWalletResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1136,7 +1136,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1147,7 +1147,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1158,7 +1158,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1169,7 +1169,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1180,7 +1180,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1191,7 +1191,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1202,7 +1202,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1213,7 +1213,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1283,7 +1283,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     PolymarketPositionsResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PolymarketPositionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1307,7 +1307,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1318,7 +1318,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1329,7 +1329,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1340,7 +1340,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1351,7 +1351,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1362,7 +1362,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1373,7 +1373,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1384,7 +1384,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1451,7 +1451,7 @@ class RawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     EventResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=EventResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1462,7 +1462,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1473,7 +1473,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1484,7 +1484,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1495,7 +1495,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1506,7 +1506,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1517,7 +1517,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         AmbiguousIdentifierError,
-                        parse_obj_as(
+                        construct_type(
                             type_=AmbiguousIdentifierError,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1528,7 +1528,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1539,7 +1539,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1550,7 +1550,7 @@ class RawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1595,7 +1595,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     PlansResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PlansResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1606,7 +1606,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1719,7 +1719,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     SportsMatchingListResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=SportsMatchingListResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1751,7 +1751,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1762,7 +1762,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1773,7 +1773,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1784,7 +1784,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1795,7 +1795,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1806,7 +1806,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1817,7 +1817,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1903,7 +1903,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     SportsMatchingLookupResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=SportsMatchingLookupResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -1914,7 +1914,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1925,7 +1925,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1936,7 +1936,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1947,7 +1947,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1958,7 +1958,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1969,7 +1969,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -1980,7 +1980,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2058,7 +2058,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     MarketsListResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=MarketsListResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2085,7 +2085,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2096,7 +2096,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2107,7 +2107,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2118,7 +2118,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2129,7 +2129,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2140,7 +2140,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2151,7 +2151,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2191,7 +2191,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     CategoriesResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=CategoriesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2202,7 +2202,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2213,7 +2213,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2224,7 +2224,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2235,7 +2235,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2246,7 +2246,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2257,7 +2257,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2332,7 +2332,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     MarketDetailResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=MarketDetailResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2343,7 +2343,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2354,7 +2354,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2365,7 +2365,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2376,7 +2376,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2387,7 +2387,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2398,7 +2398,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         AmbiguousIdentifierError,
-                        parse_obj_as(
+                        construct_type(
                             type_=AmbiguousIdentifierError,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2409,7 +2409,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2420,7 +2420,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2431,7 +2431,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2500,7 +2500,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     CryptoPricesResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=CryptoPricesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2528,7 +2528,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2539,7 +2539,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2550,7 +2550,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2561,7 +2561,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2572,7 +2572,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2583,7 +2583,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2594,7 +2594,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2652,7 +2652,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     PolymarketWalletResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PolymarketWalletResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2663,7 +2663,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2674,7 +2674,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2685,7 +2685,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2696,7 +2696,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2707,7 +2707,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2718,7 +2718,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2729,7 +2729,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2740,7 +2740,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2810,7 +2810,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _parsed_response = typing.cast(
                     PolymarketPositionsResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=PolymarketPositionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2837,7 +2837,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2848,7 +2848,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2859,7 +2859,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2870,7 +2870,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2881,7 +2881,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2892,7 +2892,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2903,7 +2903,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2914,7 +2914,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -2981,7 +2981,7 @@ class AsyncRawPredictorSDK:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
                     EventResponse,
-                    parse_obj_as(
+                    construct_type(
                         type_=EventResponse,  # type: ignore
                         object_=_response.json(),
                     ),
@@ -2992,7 +2992,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3003,7 +3003,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3014,7 +3014,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         PaymentRequiredErrorBody,
-                        parse_obj_as(
+                        construct_type(
                             type_=PaymentRequiredErrorBody,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3025,7 +3025,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3036,7 +3036,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3047,7 +3047,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         AmbiguousIdentifierError,
-                        parse_obj_as(
+                        construct_type(
                             type_=AmbiguousIdentifierError,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3058,7 +3058,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3069,7 +3069,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
@@ -3080,7 +3080,7 @@ class AsyncRawPredictorSDK:
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
-                        parse_obj_as(
+                        construct_type(
                             type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),

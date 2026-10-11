@@ -3,13 +3,14 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .canonical_sports_event import CanonicalSportsEvent
 from .pagination_block import PaginationBlock
 from .sports_matching_snapshot import SportsMatchingSnapshot
 
 
-class SportsMatchingListResponse(UniversalBaseModel):
+class SportsMatchingListResponse(UncheckedBaseModel):
     data: typing.List[CanonicalSportsEvent] = pydantic.Field()
     """
     One page of matched events, soonest scheduled start first, each once. Present on every response, as `[]` when nothing matched.

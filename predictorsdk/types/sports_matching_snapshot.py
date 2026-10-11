@@ -4,10 +4,11 @@ import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class SportsMatchingSnapshot(UniversalBaseModel):
+class SportsMatchingSnapshot(UncheckedBaseModel):
     """
     Freshness of the matching snapshot a `GET /v1/matching-markets/sports` or `GET /v1/matching-markets/sports/lookup` response was read from. Matching runs continuously in the background, so an event a response does not contain may be unmatched across venues, or missing from a snapshot that stopped updating. This block tells you whether the snapshot is still updating.
     """

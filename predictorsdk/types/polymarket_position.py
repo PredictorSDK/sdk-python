@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class PolymarketPosition(UniversalBaseModel):
+class PolymarketPosition(UncheckedBaseModel):
     condition_id: str = pydantic.Field()
     """
     Polymarket condition ID (`0x`-prefixed hex).

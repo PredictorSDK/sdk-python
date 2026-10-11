@@ -3,13 +3,14 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .markets_snapshot import MarketsSnapshot
 from .pagination_block import PaginationBlock
 from .unified_market import UnifiedMarket
 
 
-class MarketsListResponse(UniversalBaseModel):
+class MarketsListResponse(UncheckedBaseModel):
     data: typing.List[UnifiedMarket] = pydantic.Field()
     """
     Array of markets for the current page.

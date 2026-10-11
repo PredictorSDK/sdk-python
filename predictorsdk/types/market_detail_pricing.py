@@ -4,14 +4,15 @@ import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_pricing_as_of_kind import MarketDetailPricingAsOfKind
 from .market_detail_pricing_availability import MarketDetailPricingAvailability
 from .market_detail_pricing_scale import MarketDetailPricingScale
 from .market_detail_pricing_source import MarketDetailPricingSource
 
 
-class MarketDetailPricing(UniversalBaseModel):
+class MarketDetailPricing(UncheckedBaseModel):
     """
     Market-wide quote metadata for the pricing tier. Always present on the response; `availability` tells the truth about what the tier could hydrate instead of leaving consumers to guess from nulls.
 

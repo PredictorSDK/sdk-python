@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class EventMarket(UniversalBaseModel):
+class EventMarket(UncheckedBaseModel):
     market_id: str = pydantic.Field()
     """
     Provider-native market identifier. Kalshi ticker (`KXMLBGAME-26OCT152000MILLAD-MIL`), Polymarket numeric market id, SX Bet `marketHash`, Predict market id, Hyperliquid outcome id, AlphaArcade market ULID, or ProphetX `<event_id>:<market_id>`.

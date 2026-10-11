@@ -3,7 +3,8 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .canonical_sports_outcome import CanonicalSportsOutcome
 from .canonical_sports_rules import CanonicalSportsRules
 from .canonical_sports_source_market import CanonicalSportsSourceMarket
@@ -12,7 +13,7 @@ from .canonical_sports_submarket_settlement_equivalence import CanonicalSportsSu
 from .player_prop_rule_comparison import PlayerPropRuleComparison
 
 
-class CanonicalSportsSubmarket(UniversalBaseModel):
+class CanonicalSportsSubmarket(UncheckedBaseModel):
     settlement_equivalence: typing.Optional[CanonicalSportsSubmarketSettlementEquivalence] = pydantic.Field(
         default=None
     )

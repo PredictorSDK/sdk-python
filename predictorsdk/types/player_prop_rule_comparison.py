@@ -3,13 +3,14 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .player_prop_rule_comparison_comparison import PlayerPropRuleComparisonComparison
 from .player_prop_rule_comparison_rule import PlayerPropRuleComparisonRule
 from .player_prop_rule_source_value import PlayerPropRuleSourceValue
 
 
-class PlayerPropRuleComparison(UniversalBaseModel):
+class PlayerPropRuleComparison(UncheckedBaseModel):
     """
     One rule of a submarket's rule matrix, compared across its venues. The name is historical: player props introduced it, and game lines reuse it with the rules `tie`, `overtime` and `push` instead of a second type, so one model reads both. A player prop carries the nine rules from `non_participation` to `resolution_source`; a moneyline, spread or total carries `tie`, `overtime` and `push`, when the request sent `include_rules=true`.
     """

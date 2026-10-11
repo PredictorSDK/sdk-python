@@ -3,13 +3,14 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .event_fanout import EventFanout
 from .event_market import EventMarket
 from .event_response_provider import EventResponseProvider
 
 
-class EventResponse(UniversalBaseModel):
+class EventResponse(UncheckedBaseModel):
     event_id: str = pydantic.Field()
     """
     Echo of the provider-native event identifier supplied in the request path.

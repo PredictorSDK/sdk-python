@@ -4,19 +4,22 @@ import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class MarketsSnapshot(UniversalBaseModel):
+class MarketsSnapshot(UncheckedBaseModel):
     """
     Freshness of the immutable catalog snapshot a `GET /v1/markets` page was served from. This endpoint reads a stored snapshot rather than calling the venues, so the age of the rows is not the age of the request.
     """
 
     observed_at: typing.Optional[dt.datetime] = pydantic.Field(default=None)
     """
-    When PredictorSDK finished reading the OLDEST provider catalog contributing rows to this response — a conservative freshness floor for the whole page, in millisecond-precision ISO 8601.
+    When PredictorSDK began reading the OLDEST provider catalog contributing rows to this response — a conservative freshness floor for the whole page: no row in it is older than this. In millisecond-precision ISO 8601.
     
     `observed_at` is a PredictorSDK read time, the same meaning it carries on `pricing.observed_at` and `trading_fees.observed_at`. The difference is WHICH read: those two stamp the upstream call this request made, while this one stamps the background ingestion crawl that built the snapshot, so it is normally minutes to hours old rather than milliseconds. It is not `as_of` because no venue published it.
+    
+    It is the START of that crawl, never its end or the moment its snapshot was published. A full crawl takes up to about a minute (Kalshi's, the longest, about 45 seconds), and a row read at the start of a crawl is that much older than the snapshot's publication, so a later stamp would claim fresher rows than the first ones are. The matching endpoint's `snapshot.observed_at` is a read start for the same reason.
     
     **It is a floor, not a single fact.** Providers are crawled on independent schedules, so the catalog is a merge of snapshots of different ages and one of them is the stalest. Narrow the response with `?provider=` to get that provider's own read time exactly — under a filter this field describes only the selected provider, the same way `pagination.total` does.
     

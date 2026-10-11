@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class CanonicalSportsOutcome(UniversalBaseModel):
+class CanonicalSportsOutcome(UncheckedBaseModel):
     """
     One outcome of a canonical submarket. A moneyline lists the away team first, a spread `cover` before `not_cover`, and a total, team total or player prop `over` before `under`.
     """

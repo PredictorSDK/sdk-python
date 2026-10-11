@@ -3,12 +3,13 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_fee_leg_model import MarketDetailFeeLegModel
 from .market_detail_fee_rounding import MarketDetailFeeRounding
 
 
-class MarketDetailFeeLeg(UniversalBaseModel):
+class MarketDetailFeeLeg(UncheckedBaseModel):
     """
     One side's fee model. Both `taker` and `maker` are always returned and you pick: PredictorSDK does not infer which side you will be, since that needs an order it has not seen. The leg itself is `null` on `trading_fees` when the model cannot be stated for that side (see `taker` and `maker` there for when), and never null on a `scheduled_change`.
 

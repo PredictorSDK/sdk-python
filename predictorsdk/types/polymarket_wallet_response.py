@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class PolymarketWalletResponse(UniversalBaseModel):
+class PolymarketWalletResponse(UncheckedBaseModel):
     address: str = pydantic.Field()
     """
     Polymarket proxy address (lowercased) the profile is keyed on. When the input was a signer EOA, this is the resolved proxy.

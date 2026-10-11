@@ -4,8 +4,9 @@ import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.serialization import FieldMetadata
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_outcome import MarketDetailOutcome
 from .market_detail_pricing import MarketDetailPricing
 from .market_detail_response_provider import MarketDetailResponseProvider
@@ -13,7 +14,7 @@ from .market_detail_response_status import MarketDetailResponseStatus
 from .market_detail_trading_fees import MarketDetailTradingFees
 
 
-class MarketDetailResponse(UniversalBaseModel):
+class MarketDetailResponse(UncheckedBaseModel):
     """
     Single-market detail across all nine supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. The trading_fees tier applies the same rule to the venue's own published fee parameters. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
     """

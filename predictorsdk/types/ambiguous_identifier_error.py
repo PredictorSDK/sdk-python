@@ -3,10 +3,11 @@
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class AmbiguousIdentifierError(UniversalBaseModel):
+class AmbiguousIdentifierError(UncheckedBaseModel):
     """
     Error body returned with HTTP 409. The identifier you sent is well-formed but not unique: it names a real resource on more than one provider, and nothing in the request says which one you meant. Polymarket and Predict share both the bare-numeric and kebab-case identifier shapes and their id spaces genuinely overlap, so this is a routine outcome rather than an edge case — measured 2026-08-25, 53 of 93 Predict market ids drawn from `GET /v1/matching-markets/sports` also resolved on Polymarket.
 

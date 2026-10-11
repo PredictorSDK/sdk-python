@@ -4,7 +4,8 @@ import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.unchecked_base_model import UncheckedBaseModel
 from .market_detail_fee_leg import MarketDetailFeeLeg
 from .market_detail_scheduled_fee_change import MarketDetailScheduledFeeChange
 from .market_detail_trading_fees_availability import MarketDetailTradingFeesAvailability
@@ -12,7 +13,7 @@ from .market_detail_trading_fees_charge_basis import MarketDetailTradingFeesChar
 from .market_detail_trading_fees_source import MarketDetailTradingFeesSource
 
 
-class MarketDetailTradingFees(UniversalBaseModel):
+class MarketDetailTradingFees(UncheckedBaseModel):
     """
     The trading fee the PREDICTION MARKET charges on a trade in this market — the venue's own published parameters, normalized. This has nothing to do with PredictorSDK's subscription pricing.
 
