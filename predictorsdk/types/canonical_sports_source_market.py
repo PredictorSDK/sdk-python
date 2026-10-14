@@ -11,13 +11,13 @@ from .canonical_sports_source_outcome import CanonicalSportsSourceOutcome
 
 class CanonicalSportsSourceMarket(UncheckedBaseModel):
     """
-    One venue market matched to a canonical submarket. Every provider uses the same fields: `provider`; the provider's parent `event_id`, for `GET /v1/events/{event_id}`; the market's own `market_id`, for `GET /v1/markets/{market_id}`; and outcomes whose `outcome_id`s are the ones market detail returns, each mapped to a canonical outcome. Send either ID with this market's `provider`, as the composite `{provider}:{id}` or as the `provider` query parameter: a bare Predict ID can also name a Polymarket market, and AlphaArcade, ProphetX, Pred and Limitless IDs are never inferred. Any of `event_id`, `market_id` or `market_slug`, prefixed with `provider`, finds this event again through `source_id`.
+    One venue market matched to a canonical submarket. Every provider uses the same fields: `provider`; the provider's parent `event_id`, for `GET /v1/events/{event_id}`; the market's own `market_id`, for `GET /v1/markets/{market_id}`; and outcomes whose `outcome_id`s are the ones market detail returns, each mapped to a canonical outcome. Send either ID with this market's `provider`, as the composite `{provider}:{id}` or as the `provider` query parameter: a bare Predict ID can also name a Polymarket market, and AlphaArcade, ProphetX, Pred, Limitless and Hyperliquid IDs are never inferred. Any of `event_id`, `market_id` or `market_slug`, prefixed with `provider`, finds this event again through `source_id`.
     """
 
     provider: CanonicalSportsSourceMarketProvider
     event_id: str = pydantic.Field()
     """
-    The provider's own parent event for this market, for `GET /v1/events/{event_id}`: Kalshi's event ticker (a game's spread and total markets sit under events of their own), Polymarket's event slug, Predict's market ID, SX Bet's `L…` fixture ID, AlphaArcade's parent market ULID, ProphetX's integer event ID, Pred's parent market ID, or Limitless's market slug. It names a parent, not this market, so it is not a `market_id`: a Kalshi event ticker answers `404` on market detail. SX Bet lists a fixture's markets only while it trades, so once the game has ended its `L…` id answers `404` on `GET /v1/events/{event_id}` while this market's `market_id` still resolves on market detail.
+    The provider's own parent event for this market, for `GET /v1/events/{event_id}`: Kalshi's event ticker (a game's spread and total markets sit under events of their own), Polymarket's event slug, Predict's market ID, SX Bet's `L…` fixture ID, AlphaArcade's parent market ULID, ProphetX's integer event ID, Pred's parent market ID, Limitless's market slug, or Hyperliquid's outcome ID (a Hyperliquid game winner is its own event). It names a parent, not this market, so it is not a `market_id`: a Kalshi event ticker answers `404` on market detail. SX Bet lists a fixture's markets only while it trades, so once the game has ended its `L…` id answers `404` on `GET /v1/events/{event_id}` while this market's `market_id` still resolves on market detail.
     """
 
     market_id: str = pydantic.Field()
