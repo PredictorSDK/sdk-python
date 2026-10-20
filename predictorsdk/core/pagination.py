@@ -50,7 +50,9 @@ class SyncPager(Generic[T, R]):
                 return
 
     def next_page(self) -> Optional[SyncPager[T, R]]:
-        return self.get_next() if self.get_next is not None else None
+        if not self.has_next or self.get_next is None:
+            return None
+        return self.get_next()
 
 
 @dataclass(frozen=True)
@@ -79,4 +81,6 @@ class AsyncPager(Generic[T, R]):
                 return
 
     async def next_page(self) -> Optional[AsyncPager[T, R]]:
-        return await self.get_next() if self.get_next is not None else None
+        if not self.has_next or self.get_next is None:
+            return None
+        return await self.get_next()
