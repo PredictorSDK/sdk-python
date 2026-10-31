@@ -17,7 +17,7 @@ class MarketDetailTradingFees(UncheckedBaseModel):
     """
     The trading fee the PREDICTION MARKET charges on a trade in this market — the venue's own published parameters, normalized. This has nothing to do with PredictorSDK's subscription pricing.
 
-    Always present on the response. Every published model across the nine platforms is a per-share fee times the traded share count, and only the price term differs, so `taker.model` plus its parameters expresses each venue exactly rather than approximating any of them — except Limitless, whose taker curve is published as table rows with no closed form: its descriptor reports `partial` with a null taker leg instead of inventing a number. (A Limitless market with fees disabled reports `published` with both legs zero — an asserted free, never an unknown. A Pred market whose record omits `fee_rate_bps` reports `partial` for the same reason: the venue's own integration note says absent fee configuration must be confirmed, not assumed fee-free.) Compute the fee yourself:
+    Always present on the response. Every published model across the ten platforms is a per-share fee times the traded share count, and only the price term differs, so `taker.model` plus its parameters expresses each venue exactly rather than approximating any of them — except Limitless, whose taker curve is published as table rows with no closed form: its descriptor reports `partial` with a null taker leg instead of inventing a number. (A Limitless market with fees disabled reports `published` with both legs zero — an asserted free, never an unknown. A Pred market whose record omits `fee_rate_bps` reports `partial` for the same reason: the venue's own integration note says absent fee configuration must be confirmed, not assumed fee-free.) Compute the fee yourself:
 
     `fee = shares × f(price)`, then apply `rounding`, where `f` is
 
@@ -30,7 +30,7 @@ class MarketDetailTradingFees(UncheckedBaseModel):
 
     `availability` and the legs are on separate axes on purpose: availability says what is KNOWN, the legs say what is CHARGED. A fee-free market is `availability: published` with `model: "none"` and `rate: 0` — an asserted zero, distinguishable from `unpublished` (the venue publishes nothing) and from `account_specific` (rates exist but are per-account).
 
-    OUT OF SCOPE and therefore not modeled as fields, though each is real and moves the number: rebates (Polymarket's maker-rebate and taker-rebate programs), per-account discounts (Predict's 10% invite discount), volume/staking tiers and the market deployer's own fee, its `deployerFeeScale` (Hyperliquid), and third-party pass-through (Kalshi FCM customers, Polymarket builder fees). The parameters here are the venue's PUBLISHED base for this market; a specific account may pay less.
+    OUT OF SCOPE and therefore not modeled as fields, though each is real and moves the number: rebates (Polymarket's maker-rebate and taker-rebate programs, Polymarket US's maker- and taker-rebate tiers), per-account discounts (Predict's 10% invite discount), volume/staking tiers and the market deployer's own fee, its `deployerFeeScale` (Hyperliquid), and third-party pass-through (Kalshi FCM customers, Polymarket builder fees). The parameters here are the venue's PUBLISHED base for this market; a specific account may pay less.
     """
 
     availability: MarketDetailTradingFeesAvailability = pydantic.Field()
@@ -47,7 +47,7 @@ class MarketDetailTradingFees(UncheckedBaseModel):
 
     source: MarketDetailTradingFeesSource = pydantic.Field()
     """
-    Where the parameters came from, so a latency-sensitive consumer knows which platforms cost extra hops. `market_record` — embedded in the same market record the identity fetch already returned (Polymarket `feeSchedule`, Predict `feeRateBps`, AlphaArcade `feeBasePercent`); zero extra fetches. `series_record` — the parameters live on parent records and cost up to three small, TTL-cached hops (Kalshi: the event record for its series ticker and any fee override in force, the series for the base `fee_type`/`fee_multiplier` that override supersedes, then the event's pending fee changes for `scheduled_change`). `venue_schedule` — the venue exposes no per-market parameter and the answer comes from its published schedule (SX Bet, Hyperliquid).
+    Where the parameters came from, so a latency-sensitive consumer knows which platforms cost extra hops. `market_record` — embedded in the same market record the identity fetch already returned (Polymarket `feeSchedule`, Predict `feeRateBps`, AlphaArcade `feeBasePercent`, Polymarket US `feeCoefficient`); zero extra fetches. `series_record` — the parameters live on parent records and cost up to three small, TTL-cached hops (Kalshi: the event record for its series ticker and any fee override in force, the series for the base `fee_type`/`fee_multiplier` that override supersedes, then the event's pending fee changes for `scheduled_change`). `venue_schedule` — the venue exposes no per-market parameter and the answer comes from its published schedule (SX Bet, Hyperliquid).
     """
 
     charge_basis: typing.Optional[MarketDetailTradingFeesChargeBasis] = pydantic.Field(default=None)

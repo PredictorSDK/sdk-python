@@ -16,7 +16,7 @@ from .market_detail_trading_fees import MarketDetailTradingFees
 
 class MarketDetailResponse(UncheckedBaseModel):
     """
-    Single-market detail across all nine supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. The trading_fees tier applies the same rule to the venue's own published fee parameters. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
+    Single-market detail across all ten supported platforms. Identity fields are strict-universal (no second fetch on any platform); the pricing tier carries per-outcome quotes plus market-level aggregates with explicit nulls where a platform doesn't natively expose a figure — values are never fabricated. The trading_fees tier applies the same rule to the venue's own published fee parameters. closes_at/event_id remain deliberately omitted, see the endpoint description for the rationale.
     """
 
     id: str = pydantic.Field()
@@ -31,24 +31,24 @@ class MarketDetailResponse(UncheckedBaseModel):
 
     provider_id: str = pydantic.Field()
     """
-    Provider-native market identifier. Kalshi ticker, Polymarket numeric id, Predict numeric id, SX Bet `marketHash`, Hyperliquid outcome id, AlphaArcade market ULID, ProphetX `<event_id>:<market_id>` (resolving the favourite primary-line strike) or `<event_id>:<market_id>:<line>` (that line), or Limitless slug. For Polymarket markets resolved by slug, this is normalized to the numeric id. Hyperliquid integer ids collide with Polymarket/Predict numeric ids, so look them up via the composite id (`hyperliquid:<id>`, as returned by `/v1/markets`) or `?provider=hyperliquid`. Limitless slugs collide with Polymarket/Predict slugs, so look them up via the composite id (`limitless:<slug>`) or `?provider=limitless`. Pred `<parent>:<child>` pairs share the `0x…64hex` shape with SX Bet hashes, so look them up via the composite id (`pred:<parent>:<child>`) or `?provider=pred`; a bare `pred:<parent>` addresses the parent as a group.
+    Provider-native market identifier. Kalshi ticker, Polymarket numeric id, Predict numeric id, SX Bet `marketHash`, Hyperliquid outcome id, AlphaArcade market ULID, ProphetX `<event_id>:<market_id>` (resolving the favourite primary-line strike) or `<event_id>:<market_id>:<line>` (that line), Limitless slug, or Polymarket US market slug (a Polymarket US market looked up by its numeric id is published under its slug). For Polymarket markets resolved by slug, this is normalized to the numeric id. Hyperliquid integer ids collide with Polymarket/Predict numeric ids, so look them up via the composite id (`hyperliquid:<id>`, as returned by `/v1/markets`) or `?provider=hyperliquid`. Limitless slugs collide with Polymarket/Predict slugs, so look them up via the composite id (`limitless:<slug>`) or `?provider=limitless`. Pred `<parent>:<child>` pairs share the `0x…64hex` shape with SX Bet hashes, so look them up via the composite id (`pred:<parent>:<child>`) or `?provider=pred`; a bare `pred:<parent>` addresses the parent as a group. Polymarket US slugs collide with Polymarket/Predict slugs too, so look them up via the composite id (`polymarket-us:<slug>`) or `?provider=polymarket-us`.
     """
 
     title: str = pydantic.Field()
     """
-    Human-readable market title. Each platform exposes a slightly different field — Kalshi `title`, Polymarket `question`, Predict `title`, SX Bet composed from outcome labels (team-pair fallback) so a game's moneyline, spread, and total markets stay distinguishable, and Hyperliquid composed from outcome/question metadata.
+    Human-readable market title. Each platform exposes a slightly different field — Kalshi `title`, Polymarket `question`, Predict `title`, SX Bet composed from outcome labels (team-pair fallback) so a game's moneyline, spread, and total markets stay distinguishable, Hyperliquid composed from outcome/question metadata, and Polymarket US its `question`, with the period a game market's question leaves out (from its `sportsMarketType`: "… (1st half)"), a count other than points, goals or runs ("… (sets)"), and, outside a game, an option's `title` where the question is its group's ("Major League Soccer Champion — Vancouver Whitecaps FC"). Every Polymarket US surface uses this title.
     """
 
     status: MarketDetailResponseStatus = pydantic.Field()
     """
-    Normalized lifecycle status: `open` takes orders, `closed` has stopped trading without a final result, and `settled` has the venue's published result. Only an `open` market can report `pricing.availability: live`. Mapping per platform: Kalshi `active` → open · `determined` or `amended` with the result on the record (yes, no or scalar), and `finalized` → settled · `initialized`, `inactive`, `closed` and `disputed` → closed (a challenged result is not settled). Polymarket `closed` with resolution status `resolved` (UMA's on a CTF market, `resolutionStatus` on a Polymarket Protocol V2 market) → settled · any other `closed` market (a resolution proposal pending, or a pre-2023 market with no UMA status) → closed · otherwise open. Predict `status=RESOLVED` → settled · `tradingStatus=OPEN` → open · otherwise closed. SX Bet: a reported result (`reportedDate`, a void included) → settled · otherwise `ACTIVE` → open · otherwise closed; SX Bet leaves some settled markets `ACTIVE`, so its `status` alone never decides settlement. Hyperliquid: an outcome listed in its question's `settledNamedOutcomes` → settled · otherwise open. AlphaArcade `isResolved` → settled · otherwise open. ProphetX `active` → open · otherwise closed; ProphetX serves only upcoming and live events, so a ProphetX market never reads `settled` — once its game is over the market id answers `404`. Limitless `FUNDED` / `FUNDED_FLAGGED` → open · `RESOLVED` → settled · `LOCKED`, `DRAFT` and anything else → closed. Pred `active` → open · `resolved` / `redeemed` → settled · anything else → closed. Unknown upstream values map to closed.
+    Normalized lifecycle status: `open` takes orders, `closed` has stopped trading without a final result, and `settled` has the venue's published result. Only an `open` market can report `pricing.availability: live`. Mapping per platform: Kalshi `active` → open · `determined` or `amended` with the result on the record (yes, no or scalar), and `finalized` → settled · `initialized`, `inactive`, `closed` and `disputed` → closed (a challenged result is not settled). Polymarket `closed` with resolution status `resolved` (UMA's on a CTF market, `resolutionStatus` on a Polymarket Protocol V2 market) → settled · any other `closed` market (a resolution proposal pending, or a pre-2023 market with no UMA status) → closed · otherwise open. Predict `status=RESOLVED` → settled · `tradingStatus=OPEN` → open · otherwise closed. SX Bet: a reported result (`reportedDate`, a void included) → settled · otherwise `ACTIVE` → open · otherwise closed; SX Bet leaves some settled markets `ACTIVE`, so its `status` alone never decides settlement. Hyperliquid: an outcome listed in its question's `settledNamedOutcomes` → settled · otherwise open. AlphaArcade `isResolved` → settled · otherwise open. ProphetX `active` → open · otherwise closed; ProphetX serves only upcoming and live events, so a ProphetX market never reads `settled` — once its game is over the market id answers `404`. Limitless `FUNDED` / `FUNDED_FLAGGED` → open · `RESOLVED` → settled · `LOCKED`, `DRAFT` and anything else → closed. Pred `active` → open · `resolved` / `redeemed` → settled · anything else → closed. Polymarket US `MARKET_STATUS_RESOLVED` → settled (its result is published, even on the few markets still flagged open) · `MARKET_STATUS_OPEN` while `active` and not `closed` → open · anything else, `MARKET_STATUS_CLOSED` included, → closed. Unknown upstream values map to closed.
     """
 
     outcomes: typing.List[MarketDetailOutcome] = pydantic.Field()
     """
     Outcomes with per-outcome quotes, in the venue's order.
     
-    A two-sided market lists both sides, and `outcomes[0]` is the platform's primary/headline outcome: Kalshi `Yes`, Polymarket's first outcome token (its `bestBid`/`bestAsk` side), Predict `indexSet=1`, SX Bet `outcomeOne`, Hyperliquid's first `sideSpec`, ProphetX's first selection, and `Yes` on AlphaArcade, Limitless and Pred. Render `outcomes[0].price` as the headline probability; do NOT search for an outcome named "Yes" (names are free-text on Predict, SX Bet, Hyperliquid and ProphetX).
+    A two-sided market lists both sides, and `outcomes[0]` is the platform's primary/headline outcome: Kalshi `Yes`, Polymarket's first outcome token (its `bestBid`/`bestAsk` side), Predict `indexSet=1`, SX Bet `outcomeOne`, Hyperliquid's first `sideSpec`, ProphetX's first selection, Polymarket US's long (YES) side, and `Yes` on AlphaArcade, Limitless and Pred. Render `outcomes[0].price` as the headline probability; do NOT search for an outcome named "Yes" (names are free-text on Predict, SX Bet, Hyperliquid, ProphetX and Polymarket US).
     
     A market that groups several options lists one outcome per option: an AlphaArcade multi-choice market, a Limitless group, and a Pred parent. Each outcome is that option's YES, and its `outcome_id` is the option's own composite market id, which this endpoint resolves. A group has no headline outcome, and it can list dozens of outcomes (21 on AlphaArcade's 2028 presidential market), so never assume two.
     """
@@ -57,7 +57,7 @@ class MarketDetailResponse(UncheckedBaseModel):
     trading_fees: MarketDetailTradingFees
     liquidity_usd: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Resting order-book depth valued in USD — strictly CLOB book depth, never an AMM pool size or a synthetic score. Polymarket exposes it natively (`liquidityNum`); null for Kalshi (its upstream `liquidity_dollars` is deprecated and always zero), Predict (stats is null on the record), and SX Bet/Hyperliquid (no scalar without summing the raw order book).
+    Resting order-book depth valued in USD — strictly CLOB book depth, never an AMM pool size or a synthetic score. Polymarket exposes it natively (`liquidityNum`); null for Kalshi (its upstream `liquidity_dollars` is deprecated and always zero), Predict (stats is null on the record), and SX Bet/Hyperliquid/Polymarket US (no scalar without summing the raw order book).
     """
 
     volume24h_usd: typing_extensions.Annotated[
@@ -65,16 +65,16 @@ class MarketDetailResponse(UncheckedBaseModel):
         FieldMetadata(alias="volume_24h_usd"),
         pydantic.Field(
             alias="volume_24h_usd",
-            description="Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record).",
+            description="Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record, Polymarket US).",
         ),
     ] = None
     """
-    Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record).
+    Trailing-24h traded volume in USD notional. Null where the platform doesn't denominate volume in USD — notably Kalshi (contracts; see `volume_24h_contracts`) — or doesn't expose a volume aggregate at all (SX Bet, Hyperliquid, Predict's record, Polymarket US).
     """
 
     volume_total_usd: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Lifetime traded volume in USD notional. Same per-platform availability as `volume_24h_usd`. Never fabricated by converting contract counts through a price.
+    Lifetime traded volume in USD notional. Same per-platform availability as `volume_24h_usd`, except Polymarket US, whose order book publishes its lifetime `notionalTraded` (null on a settled market, whose book is not read). Never fabricated by converting contract counts through a price.
     """
 
     volume24h_contracts: typing_extensions.Annotated[
@@ -91,12 +91,12 @@ class MarketDetailResponse(UncheckedBaseModel):
 
     volume_total_contracts: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Lifetime traded volume in contracts (Kalshi `volume_fp`). Omitted for platforms that denominate volume in USD.
+    Lifetime traded volume in contracts (Kalshi `volume_fp`, Polymarket US's book `sharesTraded`). Omitted where the platform publishes no contract count.
     """
 
     open_interest: typing.Optional[float] = pydantic.Field(default=None)
     """
-    Total outstanding contracts (Kalshi `open_interest_fp`). Contracts, not USD — a positioning gauge kept separate from `liquidity_usd` (depth). Omitted where the platform doesn't expose market-level open interest.
+    Total outstanding contracts (Kalshi `open_interest_fp`, Polymarket US's book `openInterest`). Contracts, not USD — a positioning gauge kept separate from `liquidity_usd` (depth). Omitted where the platform doesn't expose market-level open interest.
     """
 
     if IS_PYDANTIC_V2:

@@ -4,7 +4,16 @@ import typing
 
 GetMarketsRequestProvider = typing.Union[
     typing.Literal[
-        "kalshi", "polymarket", "predict", "sxbet", "hyperliquid", "alpha-arcade", "prophetx", "limitless", "pred"
+        "kalshi",
+        "polymarket",
+        "predict",
+        "sxbet",
+        "hyperliquid",
+        "alpha-arcade",
+        "prophetx",
+        "limitless",
+        "pred",
+        "polymarket-us",
     ],
     typing.Any,
 ]
